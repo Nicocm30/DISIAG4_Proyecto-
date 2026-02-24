@@ -1,0 +1,194 @@
+\documentclass{ULBreport} % Llama a tu plantilla adaptada
+
+% Configuración de enlaces (esto sí se queda en el main o se puede mover al .cls)
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,      
+    urlcolor=blue,
+    citecolor=black,
+}
+
+\begin{document}
+
+% 1. GENERAR LA PORTADA CON EL COMANDO ESTRUCTURADO
+\titleUCLM{
+    title={Valorant Performance Evaluation and Ranking System \\ Un sistema de Inteligencia Artificial para la evaluación objetiva del rendimiento individual en competiciones de esports},
+    course={Desarrollo e Integración de Servicios de IA},
+    author={{\large Nicolás Celis Moreno}\\[0.7em]
+            {\large Erick Mesias Rosero Lesano}\\[0.7em]
+            {\large Johann Ismael Ordoñez Echeverría}\\[0.7em]
+            {\large Emery Santiago Medina}},
+    teacher={Julio Alberto López},
+    date={2026},
+    logoL={Logo_UCLM_40.jpg},
+    logoR={esi.png},
+    watermark={uclm_fondo.png}
+}
+
+% 2. ÍNDICES (Se generan con cuadro gris automáticamente al usar la clase report)
+\tableofcontents
+\listoftables
+\listoffigures
+
+
+% 3. CONTENIDO PRINCIPAL
+% -----------------------------------------------------------------
+% NOTA: Usamos \chapter para que el paquete fncychap dibuje el cuadro gris
+\chapter{Definición del problema y determinación del alcance}
+
+En este capítulo se detalla la definición del problema seleccionado para la evaluación del proyecto de la asignatura Desarrollo e Integración de Servicios de IA, así como la determinación de su alcance.
+
+\section{Contexto y definición del problema}
+
+En el ámbito de los deportes electrónicos profesionales (esports), la evaluación del rendimiento individual de los jugadores constituye una tarea de gran relevancia competitiva, estratégica y económica. En títulos como \textit{Valorant}, desarrollado por Riot Games, la identificación de los jugadores más influyentes de un torneo impacta directamente en decisiones relacionadas con fichajes, procesos de scouting, renovaciones contractuales, estrategias competitivas y generación de contenido mediático.
+
+Sin embargo, la determinación del jugador más valioso (Most Valuable Player, MVP) presenta una problemática compleja desde el punto de vista analítico. El rendimiento individual en Valorant es un fenómeno multidimensional que depende de factores heterogéneos como el rol desempeñado (Duelist, Controller, Sentinel o Initiator), el impacto en rondas decisivas, la eficiencia en intercambios (trades), el uso estratégico de habilidades, el daño por ronda (ADR), el Average Combat Score (ACS) y la gestión económica del equipo.
+
+Los enfoques tradicionales utilizados por plataformas públicas suelen basarse en métricas agregadas como K/D, ADR o ACS. Aunque estas métricas aportan información relevante, no capturan adecuadamente la contribución contextual del jugador ni permiten una comparación justa entre roles distintos, lo que introduce sesgos sistemáticos en la evaluación del rendimiento.
+
+El problema que se aborda en este proyecto consiste en diseñar un sistema de inteligencia artificial capaz de generar un ranking objetivo de jugadores por rol en un torneo competitivo de Valorant, a partir de datos estructurados procedentes de múltiples fuentes (Riot API, VLR.gg, Tracker.gg y HenrikDev API), aprendiendo automáticamente la importancia relativa de cada métrica de rendimiento.
+
+Desde un punto de vista formal, el problema se plantea como un problema de optimización orientado a ranking, donde cada jugador queda representado por un conjunto de variables numéricas, y el sistema debe aprender los pesos asociados a dichas variables para generar un ordenamiento coherente y explicable.
+
+% FIGURA 1.1
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figura1.png}
+    \caption{Arquitectura general del sistema VPER: integración de múltiples fuentes de datos y generación de rankings por rol.}
+    \label{fig:arquitectura}
+\end{figure}
+
+\section{Objetivos generales y específicos}
+
+El problema que se aborda en este proyecto puede formularse de la siguiente manera:
+
+\textit{¿Cómo diseñar un sistema de inteligencia artificial capaz de evaluar de forma objetiva, consistente y explicable el rendimiento individual de jugadores en un torneo competitivo de Valorant, generando rankings diferenciados por rol?}
+
+Para dar respuesta a esta cuestión, se establecen los siguientes objetivos específicos:
+
+\begin{itemize}
+    \item Analizar y formalizar el concepto de rendimiento óptimo en Valorant desde una perspectiva cuantitativa y multidimensional.
+    \item Integrar múltiples fuentes de datos (Riot API, VLR.gg, HenrikDev API y Tracker.gg) en un pipeline unificado.
+    \item Diseñar una función de valoración basada en optimización de pesos asociados a métricas de rendimiento.
+    \item Implementar y entrenar modelos de inteligencia artificial orientados a ranking.
+    \item Evaluar los modelos utilizando métricas técnicas y métricas alineadas con el dominio competitivo.
+    \item Diseñar el sistema como un producto integrable, mantenible y monitorizable.
+    \item Analizar la explicabilidad del modelo y la interpretabilidad de los pesos aprendidos.
+\end{itemize}
+
+% FIGURA 1.2
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figura2.png}
+    \caption{Objetivos del sistema VPER para la evaluación objetiva del rendimiento en esports.}
+    \label{fig:objetivos}
+\end{figure}
+
+\section{Determinación del alcance}
+
+En esta sección se delimita el alcance funcional, técnico y organizativo del sistema VPER, definiendo qué incluye el proyecto y qué queda fuera del mismo, con el objetivo de garantizar una ejecución realista dentro del marco temporal de la asignatura y alineada con el ciclo de vida completo de un sistema de inteligencia artificial como producto.
+
+El sistema VPER se centrará en la evaluación objetiva del rendimiento individual de jugadores en un torneo competitivo de Valorant, generando rankings diferenciados por rol (Duelist, Controller, Sentinel e Initiator). El alcance incluye la integración de múltiples fuentes de datos (Riot API, VLR.gg, Tracker.gg y HenrikDev API), el diseño de un pipeline de procesamiento y estructuración de datos, la formulación del problema como un modelo de optimización orientado a ranking, el entrenamiento del modelo y la validación técnica y competitiva de los resultados obtenidos.
+
+No se contempla en esta fase el desarrollo de una plataforma comercial completa ni la integración directa con sistemas oficiales de Riot Games en producción. Tampoco se abordará el análisis en tiempo real de partidas en curso, limitándose el sistema al análisis de datos históricos estructurados correspondientes a torneos finalizados.
+
+\subsection{Planificación}
+
+La duración estimada del proyecto es de doce semanas, distribuidas en fases que siguen el ciclo de vida de un proyecto de Machine Learning.
+
+En una primera fase se realizará la definición conceptual del problema, incluyendo la formalización matemática del modelo de ranking y la definición de métricas de evaluación alineadas con el dominio competitivo. Posteriormente, se desarrollará la fase de integración de datos, en la que se implementarán los mecanismos de extracción y consolidación de información procedente de las distintas APIs seleccionadas.
+
+La tercera fase consistirá en el diseño y entrenamiento del modelo de optimización, donde se ajustarán los pesos asociados a cada métrica de rendimiento. A continuación, se llevará a cabo la evaluación técnica del sistema, analizando la coherencia de los rankings generados y su alineación con valoraciones expertas. Finalmente, se desarrollará un prototipo experimental de visualización de resultados que permita demostrar la aplicabilidad práctica del sistema.
+
+Esta planificación garantiza que el proyecto no se limite al entrenamiento de un modelo aislado, sino que abarque todas las etapas necesarias para concebir un sistema de IA como producto funcional.
+
+\subsection{Recursos Humanos: asignación de tareas y capacidad}
+
+El desarrollo del sistema VPER requiere la colaboración de perfiles complementarios que reflejan una estructura realista de proyecto de inteligencia artificial.
+
+El ML Engineer o AI Researcher será responsable de la formulación del problema como modelo de optimización, del diseño de la función objetivo y del entrenamiento del sistema. Este perfil se encargará también del análisis de explicabilidad e interpretación de los pesos aprendidos.
+
+El Data Engineer o Data Analyst asumirá la responsabilidad de integrar las distintas fuentes de datos, desarrollar los procesos de limpieza, normalización y estructuración, y garantizar la consistencia del dataset final. Dado que el sistema depende de múltiples APIs y fuentes externas, este rol resulta crítico para asegurar la calidad del modelo.
+
+El Experto en dominio, en este caso un analista competitivo de Valorant, desempeñará un papel esencial en la validación cualitativa de los rankings generados. Su función será evaluar si los resultados producidos por el sistema son coherentes con la realidad estratégica del juego competitivo.
+
+El stakeholder principal del proyecto será una organización competitiva, academia o equipo semiprofesional de Valorant interesado en mejorar sus procesos de scouting y evaluación de jugadores. El sistema se concibe como herramienta de apoyo a la decisión y no como sustituto del juicio experto.
+
+\subsection{Viabilidad. Estudio del ROI}
+
+La viabilidad del sistema se evalúa considerando un escenario realista:
+
+\begin{itemize}
+    \item Duración del proyecto: 12 semanas.
+    \item 3 personas.
+    \item 10 horas semanales por persona.
+    \item Coste medio estimado: 45 € por hora.
+\end{itemize}
+
+Horas totales:
+
+\[
+3 \times 10 \times 12 = 360 \text{ horas}
+\]
+
+Coste total estimado:
+
+\[
+360 \times 45 = 16.200 \text{ €}
+\]
+
+Si el sistema permite evitar un fichaje erróneo valorado en 20.000 €, el ROI estimado sería:
+
+\begin{equation}
+    ROI = \frac{20000 - 16200}{16200} \approx 0,23
+    \label{eq:roi}
+\end{equation}
+
+Es decir, un ROI aproximado del $23\%$, sin considerar beneficios derivados de reutilización futura o posible comercialización como herramienta SaaS.
+
+\subsection{Valor}
+
+El valor aportado por el sistema VPER se manifiesta en múltiples dimensiones interrelacionadas que trascienden el ámbito puramente técnico.
+
+\begin{description}
+
+    \item[Valor competitivo:] el sistema permite una evaluación objetiva y diferenciada por rol, reduciendo los sesgos tradicionales asociados a métricas superficiales. Esto facilita comparaciones más justas entre jugadores con funciones estratégicas distintas y contribuye a una toma de decisiones más fundamentada.
+
+    \item[Valor organizativo:] el sistema constituye una base tecnológica reutilizable que puede integrarse en procesos internos de scouting, análisis post-partido y planificación estratégica. Al estructurar la evaluación del rendimiento como un modelo formalizado y reproducible, la organización reduce la dependencia exclusiva de valoraciones subjetivas.
+
+    \item[Valor reputacional:] la transparencia en la generación de rankings puede mejorar la credibilidad de decisiones relacionadas con la selección de MVP o fichajes estratégicos. En un entorno altamente mediático como los esports, la percepción de objetividad resulta especialmente relevante.
+
+    \item[Valor tecnológico:] el sistema formaliza la evaluación del rendimiento en esports como un problema de optimización orientado a ranking, integrando múltiples fuentes de datos y manteniendo un enfoque interpretable. Esto sitúa el proyecto no solo como una aplicación práctica, sino como una propuesta metodológica transferible a otros títulos competitivos o disciplinas deportivas digitales.
+
+\end{description}
+
+% =================================================================
+% BIBLIOGRAFÍA (Añadir fuentes bibliográficas)
+% =================================================================
+\newpage
+\begin{thebibliography}{9}
+
+    \bibitem{LRA25}
+    López-Gómez, J. A., Romero, F. P., \& Angulo, E. (2025). 
+    \textit{Bio-inspired algorithms for the characterization of excellent performance in handball players: A data-driven methodology}. 
+    Expert Systems with Applications, 274, 126821.
+
+    \bibitem{ARL22}
+    Angulo, E., Romero, F. P., \& Lopez-Gomez, J. A. (2022). 
+    \textit{A comparison of different soft-computing techniques for the evaluation of handball goalkeepers}. 
+    Soft Computing, 26, 3045-3058.
+
+    \bibitem{LRA22}
+    Lopez-Gomez, J. A., Romero, F. P., \& Angulo, E. (2022). 
+    \textit{A Feature-Weighting Approach Using Metaheuristic Algorithms}. 
+    IEEE Access, 10, 30556-30572.
+
+    \bibitem{Rom21}
+    Romero, F. P., et al. (2021). 
+    \textit{A data-driven approach to predict the most valuable player in a game}. 
+    Computational and Mathematical Methods.
+
+\end{thebibliography}
+
+\end{document}
