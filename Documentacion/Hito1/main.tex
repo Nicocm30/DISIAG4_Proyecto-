@@ -13,7 +13,7 @@
 
 % 1. GENERAR LA PORTADA CON EL COMANDO ESTRUCTURADO
 \titleUCLM{
-    title={Valorant Performance Evaluation and Ranking System \\ Un sistema de Inteligencia Artificial para la evaluación objetiva del rendimiento individual en competiciones de esports},
+    title={Valorant Performance Evaluation \\ Un sistema de Inteligencia Artificial para la evaluación objetiva del rendimiento individual en competiciones de esports},
     course={Desarrollo e Integración de Servicios de IA},
     author={{\large Nicolás Celis Moreno}\\[0.7em]
             {\large Erick Mesias Rosero Lesano}\\[0.7em]
@@ -40,15 +40,19 @@ En este capítulo se detalla la definición del problema seleccionado para la ev
 
 \section{Contexto y definición del problema}
 
-En el ámbito de los deportes electrónicos profesionales (esports), la evaluación del rendimiento individual de los jugadores constituye una tarea de gran relevancia competitiva, estratégica y económica. En títulos como \textit{Valorant}, desarrollado por Riot Games, la identificación de los jugadores más influyentes de un torneo impacta directamente en decisiones relacionadas con fichajes, procesos de scouting, renovaciones contractuales, estrategias competitivas y generación de contenido mediático.
+En el ecosistema competitivo de Valorant, los equipos que participan en las Valorant Challengers Leagues (VCL) representan el nivel Tier 2 del circuito profesional, funcionando como segunda división o cantera del sistema VCT. Estas organizaciones operan en un entorno altamente competitivo, con presupuestos limitados y márgenes estratégicos reducidos, donde cada decisión relacionada con fichajes, renovaciones o promociones internas tiene implicaciones deportivas, organizativas y económicas significativas.
 
-Sin embargo, la determinación del jugador más valioso (Most Valuable Player, MVP) presenta una problemática compleja desde el punto de vista analítico. El rendimiento individual en Valorant es un fenómeno multidimensional que depende de factores heterogéneos como el rol desempeñado (Duelist, Controller, Sentinel o Initiator), el impacto en rondas decisivas, la eficiencia en intercambios (trades), el uso estratégico de habilidades, el daño por ronda (ADR), el Average Combat Score (ACS) y la gestión económica del equipo.
+Más allá del impacto financiero, uno de los principales desafíos que enfrentan estas organizaciones es la evaluación objetiva del rendimiento individual en un juego cuya naturaleza es profundamente contextual y multidimensional. A diferencia de métricas tradicionales basadas únicamente en resultados visibles como asesinatos, daño total o puntuaciones agregadas el desempeño en Valorant depende de variables que interactúan de forma compleja: el rol desempeñado (Duelist, Controller, Sentinel o Initiator), el agente seleccionado, el mapa disputado, la economía del equipo, la gestión de utilidades y la influencia en rondas críticas.
 
-Los enfoques tradicionales utilizados por plataformas públicas suelen basarse en métricas agregadas como K/D, ADR o ACS. Aunque estas métricas aportan información relevante, no capturan adecuadamente la contribución contextual del jugador ni permiten una comparación justa entre roles distintos, lo que introduce sesgos sistemáticos en la evaluación del rendimiento.
+En la práctica, los procesos actuales de análisis en equipos Tier 2 combinan revisión manual de partidas (VOD review), interpretación subjetiva del cuerpo técnico y consulta de estadísticas públicas como K/D, ACS o ADR. Aunque estos métodos aportan información relevante, presentan limitaciones estructurales. El análisis manual es costoso en tiempo y depende de la experiencia del analista; las métricas agregadas tienden a favorecer perfiles orientados al enfrentamiento directo (fraggers o duelists); y la comparación entre jugadores de roles distintos suele realizarse sin una normalización contextual adecuada.
 
-El problema que se aborda en este proyecto consiste en diseñar un sistema de inteligencia artificial capaz de generar un ranking objetivo de jugadores por rol en un torneo competitivo de Valorant, a partir de datos estructurados procedentes de múltiples fuentes (Riot API, VLR.gg, Tracker.gg y HenrikDev API), aprendiendo automáticamente la importancia relativa de cada métrica de rendimiento.
+Esta situación genera un margen de error estimado entre el 30\% y el 45\% en decisiones relacionadas con evaluación individual, debido a sesgos cognitivos que priorizan acciones visibles y subestiman contribuciones menos evidentes, como el uso eficiente de utilidades, la creación de espacio, la presión estratégica o la consistencia táctica dentro del rol asignado. En consecuencia, las organizaciones pueden sobrevalorar determinados perfiles y subestimar otros cuya aportación es crítica para la estructura colectiva del equipo.
 
-Desde un punto de vista formal, el problema se plantea como un problema de optimización orientado a ranking, donde cada jugador queda representado por un conjunto de variables numéricas, y el sistema debe aprender los pesos asociados a dichas variables para generar un ordenamiento coherente y explicable.
+El problema que se aborda en este proyecto no se limita a generar un ranking general de jugadores, sino a diseñar un sistema de inteligencia artificial capaz de evaluar el desempeño individual dentro del rol específico que ocupa cada jugador, considerando el contexto competitivo en el que se produce dicho rendimiento. El sistema debe aprender la importancia relativa de múltiples métricas técnicas y estratégicas, integrando información procedente de distintas fuentes estructuradas, con el objetivo de producir rankings diferenciados por rol que sean coherentes, explicables y alineados con el análisis experto.
+
+Desde un punto de vista formal, el problema se plantea como un modelo de optimización orientado a ranking, donde cada jugador es representado por un conjunto de variables cuantitativas contextualizadas por agente, mapa y arma. El sistema debe determinar una combinación ponderada de estas variables que permita ordenar a los jugadores de forma consistente, reduciendo el sesgo hacia métricas superficiales y proporcionando una herramienta de apoyo a la decisión para organizaciones Tier 2.
+
+El sistema no pretende reemplazar el criterio humano, sino estructurarlo, reducir su variabilidad y complementar el análisis tradicional con un enfoque reproducible y formalizado. En este sentido, el proyecto aborda simultáneamente un problema competitivo de mejorar la calidad del scouting y la evaluación interna y un problema metodológico para formalizar la evaluación del rendimiento en esports como un sistema interpretable y transferible a otros entornos competitivos digitales.
 
 % FIGURA 1.1
 \begin{figure}[H]
@@ -64,16 +68,17 @@ El problema que se aborda en este proyecto puede formularse de la siguiente mane
 
 \textit{¿Cómo diseñar un sistema de inteligencia artificial capaz de evaluar de forma objetiva, consistente y explicable el rendimiento individual de jugadores en un torneo competitivo de Valorant, generando rankings diferenciados por rol?}
 
-Para dar respuesta a esta cuestión, se establecen los siguientes objetivos específicos:
+Para dar respuesta a esta cuestión, se debe: Diseñar, implementar y validar un sistema de inteligencia artificial capaz de evaluar de forma objetiva, consistente y explicable el rendimiento individual de jugadores en competiciones VCL, generando rankings diferenciados por rol que sirvan como apoyo a decisiones de scouting en equipos Tier 2.
+
+Junto con los objetivos especificos que son los siguientes:
 
 \begin{itemize}
-    \item Analizar y formalizar el concepto de rendimiento óptimo en Valorant desde una perspectiva cuantitativa y multidimensional.
-    \item Integrar múltiples fuentes de datos (Riot API, VLR.gg, HenrikDev API y Tracker.gg) en un pipeline unificado.
-    \item Diseñar una función de valoración basada en optimización de pesos asociados a métricas de rendimiento.
-    \item Implementar y entrenar modelos de inteligencia artificial orientados a ranking.
-    \item Evaluar los modelos utilizando métricas técnicas y métricas alineadas con el dominio competitivo.
-    \item Diseñar el sistema como un producto integrable, mantenible y monitorizable.
-    \item Analizar la explicabilidad del modelo y la interpretabilidad de los pesos aprendidos.
+    \item \textbf{Formalizar} el concepto de rendimiento óptimo por rol en Valorant competitivo.
+    \item \textbf{Integrar y estructurar} datos históricos procedentes de múltiples APIs públicas.
+    \item \textbf{Diseñar} un modelo de optimización orientado a ranking que aprenda pesos contextuales por agente, mapa y arma.
+    \item \textbf{Reducir} el sesgo estructural hacia \textit{duelists} y \textit{fraggers}.
+    \item \textbf{Evaluar} la coherencia del ranking con valoraciones expertas del staff técnico.
+    \item \textbf{Diseñar} el sistema como producto integrable en procesos internos de análisis competitivo.
 \end{itemize}
 
 % FIGURA 1.2
@@ -86,11 +91,15 @@ Para dar respuesta a esta cuestión, se establecen los siguientes objetivos espe
 
 \section{Determinación del alcance}
 
-En esta sección se delimita el alcance funcional, técnico y organizativo del sistema VPER, definiendo qué incluye el proyecto y qué queda fuera del mismo, con el objetivo de garantizar una ejecución realista dentro del marco temporal de la asignatura y alineada con el ciclo de vida completo de un sistema de inteligencia artificial como producto.
+El sistema VPER tiene como objetivo delimitar con precisión qué funcionalidades forman parte del proyecto y cuáles quedan explícitamente excluidas, garantizando una ejecución realista dentro del marco temporal de la asignatura y coherente con el desarrollo de un sistema de inteligencia artificial concebido como producto.
 
-El sistema VPER se centrará en la evaluación objetiva del rendimiento individual de jugadores en un torneo competitivo de Valorant, generando rankings diferenciados por rol (Duelist, Controller, Sentinel e Initiator). El alcance incluye la integración de múltiples fuentes de datos (Riot API, VLR.gg, Tracker.gg y HenrikDev API), el diseño de un pipeline de procesamiento y estructuración de datos, la formulación del problema como un modelo de optimización orientado a ranking, el entrenamiento del modelo y la validación técnica y competitiva de los resultados obtenidos.
+El sistema se centrará exclusivamente en la evaluación objetiva del rendimiento individual de jugadores que compiten en torneos pertenecientes a las Valorant Challengers Leagues (VCL), generando rankings diferenciados por rol competitivo (Duelist, Controller, Sentinel e Initiator). Esta delimitación responde a la necesidad de mantener coherencia estructural en la comparación de jugadores, evitando comparaciones transversales entre funciones estratégicamente distintas dentro del juego.
 
-No se contempla en esta fase el desarrollo de una plataforma comercial completa ni la integración directa con sistemas oficiales de Riot Games en producción. Tampoco se abordará el análisis en tiempo real de partidas en curso, limitándose el sistema al análisis de datos históricos estructurados correspondientes a torneos finalizados.
+El alcance funcional del proyecto comprende, en primer lugar, la integración de datos históricos estructurados procedentes de múltiples fuentes públicas (Riot API, VLR.gg, Tracker.gg y HenrikDev API). Esta integración no se limita a la mera recopilación de estadísticas agregadas, sino que implica la consolidación, normalización y contextualización de métricas relevantes, tales como rendimiento por agente, impacto por mapa y eficiencia asociada al uso de armas. El objetivo es construir un dataset consistente que permita modelar el desempeño individual desde una perspectiva multidimensional y contextualizada.
+
+En segundo lugar, el sistema incluirá el diseño de un modelo de optimización orientado a ranking, cuya función consistirá en aprender los pesos asociados a cada métrica de rendimiento. Este modelo permitirá generar ordenamientos diferenciados por rol, reduciendo el sesgo estructural hacia métricas centradas exclusivamente en daño o asesinatos, y proporcionando una evaluación más equilibrada del impacto competitivo.
+
+Asimismo, el alcance contempla la evaluación técnica del modelo mediante métricas cuantitativas y la validación cualitativa de los rankings generados a través de su alineación con valoraciones expertas del staff técnico o analistas del dominio competitivo. Esta fase resulta esencial para garantizar que el sistema no se limite a optimizar indicadores estadísticos, sino que produzca resultados interpretables y coherentes con la realidad estratégica del juego.
 
 \subsection{Planificación}
 
@@ -116,35 +125,50 @@ El stakeholder principal del proyecto será una organización competitiva, acade
 
 \subsection{Viabilidad. Estudio del ROI}
 
-La viabilidad del sistema se evalúa considerando un escenario realista:
+La viabilidad económica del sistema VPER se analiza considerando un escenario realista dentro del ecosistema competitivo de Valorant Tier 2 (VCL), donde los equipos operan con presupuestos anuales estimados entre 45.000 y 250.000 dólares, y los salarios promedio por jugador oscilan entre 1.200\,€ y 3.500\,€ mensuales, pudiendo alcanzar los 5.000\,€ en organizaciones con mayor respaldo financiero.
+
+El desarrollo del sistema se estima bajo los siguientes supuestos:
 
 \begin{itemize}
-    \item Duración del proyecto: 12 semanas.
-    \item 3 personas.
-    \item 10 horas semanales por persona.
-    \item Coste medio estimado: 45 € por hora.
+    \item Duración del proyecto: 12 semanas
+    \item Equipo de trabajo: 3 personas
+    \item Dedicación media: 10 horas semanales por persona
+    \item Coste medio estimado por hora: 45\,€
 \end{itemize}
 
-Horas totales:
+Las horas totales invertidas serían:
 
 \[
-3 \times 10 \times 12 = 360 \text{ horas}
+H = 3 \times 10 \times 12 = 360 \text{ horas}
 \]
 
-Coste total estimado:
+El coste total estimado del desarrollo sería:
 
 \[
-360 \times 45 = 16.200 \text{ €}
+C = 360 \times 45 = 16.200\,€
 \]
 
-Si el sistema permite evitar un fichaje erróneo valorado en 20.000 €, el ROI estimado sería:
+En el contexto Tier 2, un contrato anual de un jugador puede situarse entre 14.400\,€ y 42.000\,€, dependiendo del nivel competitivo y la región. Un fichaje erróneo no solo implica el coste salarial directo, sino también costes indirectos asociados a bajo rendimiento competitivo, pérdida de oportunidades de clasificación y rotaciones prematuras de plantilla.
 
-\begin{equation}
-    ROI = \frac{20000 - 16200}{16200} \approx 0,23
-    \label{eq:roi}
-\end{equation}
+Si se considera un escenario conservador en el que el sistema contribuye a evitar un fichaje ineficiente valorado en aproximadamente 20.000\,€ anuales, el retorno de la inversión puede calcularse mediante la fórmula clásica:
 
-Es decir, un ROI aproximado del $23\%$, sin considerar beneficios derivados de reutilización futura o posible comercialización como herramienta SaaS.
+\[
+ROI = \frac{B - C}{C}
+\]
+
+donde $B$ representa el beneficio económico estimado y $C$ el coste de desarrollo.
+
+Sustituyendo valores:
+
+\[
+ROI = \frac{20.000 - 16.200}{16.200} \approx 0{,}23
+\]
+
+Esto representa un ROI aproximado del 23\% en el primer año de uso.
+
+Este cálculo es deliberadamente prudente y se fundamenta en tres aspectos clave. En primer lugar, el sistema no pretende eliminar completamente el error en la toma de decisiones, sino reducir el margen estimado del 30--45\% asociado al análisis exclusivamente manual. En segundo lugar, el beneficio considerado contempla únicamente el impacto directo de evitar un contrato ineficiente, sin incorporar posibles ahorros en horas de análisis técnico ni la reutilización del sistema en temporadas posteriores. En tercer lugar, el coste de desarrollo es una inversión puntual, mientras que el beneficio puede extenderse en el tiempo mediante su uso recurrente.
+
+Desde esta perspectiva, incluso bajo supuestos conservadores, el sistema VPER presenta viabilidad económica para organizaciones Tier 2, especialmente cuando se considera su potencial de reutilización y mejora continua en ciclos competitivos sucesivos.
 
 \subsection{Valor}
 
