@@ -186,6 +186,63 @@ El valor aportado por el sistema VPER se manifiesta en múltiples dimensiones in
 
 \end{description}
 
+% -----------------------------------------------------------------
+\chapter{Los datos: origen, descripción y análisis}
+
+\section{Introducción}
+
+En este hito se describen y analizan los datos que se utilizarán para abordar el problema planteado en el capítulo anterior, consistente en diseñar, implementar y validar un sistema de inteligencia artificial capaz de evaluar el rendimiento de jugadores profesionales del videojuego competitivo \textit{Valorant}.
+
+El objetivo del sistema es determinar qué jugadores presentan un mayor impacto competitivo dentro de su rol o agente, utilizando métricas de rendimiento extraídas de partidas profesionales. Este sistema pretende servir como herramienta de apoyo para el análisis objetivo del desempeño de los jugadores en competiciones profesionales.
+
+% -----------------------------------------------------------------
+\section{Fuentes, origen y tamaño de los datos}
+
+Los datos utilizados para implementar el sistema propuesto provienen de diferentes plataformas que recopilan estadísticas competitivas del videojuego competitivo \textit{Valorant}, incluyendo datos oficiales, APIs públicas y repositorios de análisis de competiciones profesionales. Estas fuentes permiten obtener información detallada sobre el rendimiento individual de los jugadores, así como sobre el contexto de las partidas en torneos profesionales.
+
+Concretamente, el volumen total de datos se obtiene a partir de varias fuentes complementarias que permiten capturar diferentes dimensiones del rendimiento competitivo.
+
+\subsection*{Datos de la API oficial de Riot Games}
+
+La API oficial de Riot Games proporciona acceso a información detallada sobre partidas, jugadores, agentes utilizados y estadísticas de rendimiento dentro del ecosistema competitivo de \textit{Valorant}. A través de esta API es posible obtener datos estructurados sobre el historial de partidas, estadísticas individuales de los jugadores y resultados de los encuentros. Esta fuente constituye una de las principales bases de datos para el análisis del rendimiento competitivo.
+
+\subsection*{Datos de estadísticas competitivas de VLR.gg}
+
+La plataforma VLR.gg recopila información detallada sobre torneos profesionales de \textit{Valorant}, incluyendo estadísticas de jugadores, mapas disputados, equipos participantes y resultados de partidas. Estos datos permiten complementar la información obtenida mediante la API oficial, especialmente en lo relativo al contexto competitivo de los torneos.
+
+\subsection*{Datos de rendimiento de jugadores mediante Tracker Network}
+
+La plataforma Tracker.gg ofrece estadísticas avanzadas sobre el rendimiento de jugadores, tales como métricas agregadas de combate, eficiencia en rondas y análisis histórico de partidas. Estos datos permiten ampliar el conjunto de variables disponibles para el análisis del rendimiento individual.
+
+\subsection*{Datos históricos de competiciones profesionales}
+
+Adicionalmente, se utilizan datasets históricos de resultados y estadísticas de torneos pertenecientes al circuito profesional \textit{Valorant Champions Tour}, así como registros de ligas regionales como la \textit{Challengers League}. Estos datasets incluyen información sobre resultados de partidos, jugadores participantes y estadísticas acumuladas durante los torneos.
+
+Los datos recopilados a partir de estas fuentes se almacenan en formato \texttt{.csv}, lo que permite su tratamiento mediante herramientas de análisis de datos y aprendizaje automático.
+
+\subsection{Estructura del dataset}
+
+En cuanto a la estructura del dataset, los datos presentan una naturaleza tabular. Cada fila del conjunto de datos representa el desempeño de un jugador en una partida o mapa específico dentro de un torneo competitivo. Las columnas contienen las diferentes variables estadísticas asociadas al rendimiento del jugador durante dicha partida.
+
+Entre las variables incluidas en el dataset se encuentran métricas como:
+
+\begin{itemize}
+    \item Eliminaciones (\textit{kills})
+    \item Muertes (\textit{deaths})
+    \item Asistencias (\textit{assists})
+    \item Daño promedio por ronda (\textit{ADR})
+    \item Puntuación media de combate (\textit{ACS})
+    \item Agente utilizado
+    \item Mapa de la partida
+    \item Economía de rondas y compra de armas
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{tracker_stats.png}
+    \caption{Ejemplo de panel de estadísticas competitivas de un jugador en la plataforma Tracker.gg.}
+    \label{fig:tracker_stats}
+\end{figure}
+El volumen total de datos recopilados depende de la cantidad de torneos y partidas consideradas en el análisis. De forma aproximada, el dataset final contiene varios miles de registros correspondientes a jugadores en partidas profesionales, con decenas de variables estadísticas por observación que describen diferentes aspectos del rendimiento competitivo.
 % =================================================================
 % BIBLIOGRAFÍA (Añadir fuentes bibliográficas)
 % =================================================================
