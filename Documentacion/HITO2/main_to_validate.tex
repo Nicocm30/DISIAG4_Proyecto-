@@ -1,0 +1,421 @@
+\documentclass{ULBreport} % Llama a tu plantilla adaptada
+
+% Configuración de enlaces (esto sí se queda en el main o se puede mover al .cls)
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,      
+    urlcolor=blue,
+    citecolor=black,
+}
+
+\begin{document}
+
+% 1. GENERAR LA PORTADA CON EL COMANDO ESTRUCTURADO
+\titleUCLM{
+    title={Valorant Performance Evaluation \\ Un sistema de Inteligencia Artificial para la evaluación objetiva del rendimiento individual en competiciones},
+    course={Desarrollo e Integración de Servicios de IA},
+    author={{\large Nicolás Celis Moreno}\\[0.7em]
+            {\large Erick Mesias Rosero Lesano}\\[0.7em]
+            {\large Johann Ismael Ordoñez Echeverría}\\[0.7em]},
+    teacher={Julio Alberto López},
+    date={2026},
+    logoL={Logo_UCLM_40.jpg},
+    logoR={esi.png},
+    watermark={uclm_fondo.png}
+}
+
+% 2. ÍNDICES (Se generan con cuadro gris automáticamente al usar la clase report)
+\tableofcontents
+\listoftables
+\listoffigures
+
+
+% -----------------------------------------------------------------
+% 3. CONTENIDO PRINCIPAL
+% -----------------------------------------------------------------
+\chapter{Definición del problema y determinación del alcance}
+
+En este capítulo se presenta la definición del problema abordado en el proyecto \textit{Valorant Performance Evaluation}, así como la determinación de su alcance, viabilidad y estudio del retorno sobre la inversión. El objetivo es establecer una base conceptual, operativa y económica sólida para el desarrollo de un sistema de inteligencia artificial orientado a la evaluación objetiva del rendimiento individual en competiciones de \textit{Valorant}.
+
+\section{Definición del proyecto}
+
+\subsection{Contexto del problema}
+
+En el entorno competitivo de los \textit{esports}, y en particular en el videojuego \textit{Valorant}, los equipos de nivel Tier 2 operan bajo condiciones de alta exigencia técnica y táctica, con recursos materiales frecuentemente limitados. En este contexto, la evaluación del rendimiento individual de los jugadores constituye un elemento crítico para la toma de decisiones estratégicas, tales como rotaciones de equipo, ajustes en la planificación táctica, diseño de entrenamientos específicos o la incorporación de nuevos jugadores mediante fichajes.
+
+No obstante, la naturaleza altamente contextual del videojuego dificulta de manera significativa la evaluación objetiva del desempeño individual. Variables como el rol desempeñado ---ya sea \textit{Duelist}, \textit{Controller}, \textit{Sentinel} o \textit{Initiator}---, el agente seleccionado, el mapa en disputa y la economía del equipo inciden directamente sobre las métricas de rendimiento observadas, condicionando su correcta interpretación.
+
+Los enfoques evaluativos actualmente prevalentes en el ecosistema Tier 2 se basan, por lo general, en la observación manual de partidas, en el análisis de métricas aisladas ---como el KDA, el ACS o el daño promedio por ronda--- y en valoraciones subjetivas emitidas por analistas y entrenadores. Este tipo de aproximación presenta limitaciones sustanciales: puede generar interpretaciones sesgadas, dar lugar a inconsistencias en la evaluación y no capturar información relevante que no resulta evidente a simple vista.
+
+En consecuencia, el problema que motiva el presente proyecto consiste en diseñar un sistema de inteligencia artificial capaz de evaluar de forma objetiva y contextualizada el rendimiento individual de los jugadores, incorporando variables como el rol específico que desempeñan y las condiciones particulares en que dicho rendimiento se produce.
+
+% FIGURA 1.1
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figura1.png}
+    \caption{Arquitectura general del sistema VPER: integración de múltiples fuentes de datos y generación de rankings por rol.}
+    \label{fig:arquitectura}
+\end{figure}
+
+\subsection{Cliente y usuarios}
+
+El cliente principal del sistema son los equipos de \textit{esports} de nivel Tier 2, específicamente su \textit{staff} técnico, compuesto por analistas y entrenadores, quienes constituyen los decisores estratégicos que harán uso directo de la información generada. Adicionalmente, los propios jugadores pueden actuar como usuarios secundarios del sistema, utilizándolo para comprender mejor su desempeño e identificar oportunidades de mejora. No obstante, el enfoque principal del sistema está orientado a fortalecer la capacidad de análisis del cuerpo técnico.
+
+Los usuarios del sistema poseen conocimientos técnicos sólidos sobre las métricas del juego; sin embargo, demandan una presentación clara y estructurada de la información para facilitar su interpretación y aplicación práctica en contextos de toma de decisiones.
+
+\subsection{Decisión que soporta el sistema}
+
+El sistema desarrollado proporcionará al \textit{staff} técnico información objetiva y estructurada para fundamentar decisiones relacionadas con el rendimiento individual de los jugadores. Entre las decisiones que el sistema está diseñado para apoyar, se destacan las siguientes:
+
+\begin{enumerate}
+    \item Determinar si un jugador está cumpliendo de manera adecuada las responsabilidades asociadas a su rol dentro del equipo.
+    \item Identificar desviaciones en el rendimiento en función de variables contextuales como el mapa, el agente utilizado o la situación económica del equipo.
+    \item Detectar fortalezas y debilidades específicas del jugador con base en evidencia empírica.
+    \item Apoyar decisiones relacionadas con rotaciones de plantilla, programas de entrenamiento y ajustes tácticos.
+\end{enumerate}
+
+En este sentido, el sistema no se limita a ofrecer información descriptiva, sino que actúa como una herramienta de apoyo a la toma de decisiones estratégicas, aportando valor operativo real al equipo técnico.
+
+\subsection{Descripción del sistema propuesto}
+
+El sistema propuesto consiste en una solución de inteligencia artificial capaz de analizar datos históricos de partidas de \textit{Valorant} y producir una evaluación contextualizada del rendimiento individual de cada jugador. Como resultado de su ejecución, el sistema generará las siguientes salidas:
+
+\begin{enumerate}
+    \item \textbf{Score de desempeño por rol:} un valor numérico normalizado que cuantifica el nivel de rendimiento del jugador en función de su rol específico, permitiendo una interpretación rápida y comparativa.
+    \item \textbf{Reporte analítico estructurado:} un documento que incluye la comparación del jugador frente al promedio de su rol, el análisis del rendimiento según variables contextuales ---mapa, agente y economía---, y la identificación de fortalezas y debilidades.
+    \item \textbf{Ranking relativo por rol:} una clasificación de jugadores dentro del mismo rol, diseñada para evitar comparaciones incorrectas entre jugadores con funciones distintas.
+\end{enumerate}
+
+Esta estructura de salidas permite tanto una lectura inmediata para la toma de decisiones operativas como un análisis profundo que respalda decisiones de mayor alcance estratégico.
+
+\subsection{Definición de éxito y fracaso}
+
+El sistema se considerará exitoso en la medida en que cumpla con los siguientes criterios de evaluación:
+
+\begin{enumerate}
+    \item Proveer evaluaciones consistentes y coherentes con el análisis experto realizado por el \textit{staff} técnico.
+    \item Permitir la identificación de patrones de rendimiento que no resultan evidentes mediante la observación manual.
+    \item Reducir el grado de subjetividad en la evaluación del desempeño individual.
+    \item Presentar resultados comprensibles, accionables y útiles para el usuario final.
+\end{enumerate}
+
+Por el contrario, el sistema se considerará un fracaso si genera evaluaciones inconsistentes o contradictorias, si no aporta valor adicional respecto al análisis manual tradicional, si produce métricas difíciles de interpretar o de escasa utilidad práctica, o si no es adoptado por los usuarios debido a limitaciones en su pertinencia o usabilidad.
+
+\section{Determinación del alcance}
+
+\subsection{Datos del sistema}
+
+El sistema operará sobre datos reales obtenidos a partir de diversas fuentes especializadas, incluyendo APIs oficiales y no oficiales ---como la Riot API y la HenrikDev API---, así como plataformas de seguimiento de rendimiento como VLR.gg y Tracker.gg. El conjunto de datos comprende tanto métricas individuales como contextuales, entre las que se incluyen el KDA, el ACS, el daño promedio por ronda, el rendimiento por agente y por mapa, la información sobre economía del equipo y los eventos ocurridos durante la partida. Todos los datos corresponden a partidas reales de competiciones de nivel Tier 2.
+
+\subsection{Alcance funcional}
+
+El sistema desarrollado en el marco del presente proyecto incluirá las siguientes funcionalidades:
+
+\begin{itemize}
+    \item Evaluación del rendimiento individual de jugadores.
+    \item Cálculo de un \textit{score} de desempeño basado en el rol.
+    \item Generación de reportes analíticos contextualizados.
+    \item Creación de rankings comparativos por rol.
+\end{itemize}
+
+\subsection{Limitaciones del sistema}
+
+Con el propósito de mantener un alcance realista y controlado, el sistema no incluirá funcionalidades de predicción de resultados de partidas, simulación de escenarios de juego, recomendación automática de roles o agentes, ni sistemas de toma de decisiones autónomas. Estas capacidades podrán considerarse como extensiones potenciales en fases futuras del proyecto.
+
+\subsection{Justificación del alcance}
+
+El alcance definido permite abordar el problema central de forma concreta y eficiente, priorizando la evaluación objetiva del rendimiento individual sin incorporar complejidad funcional innecesaria. Dado que el objetivo del proyecto es la construcción de un sistema de inteligencia artificial completo y funcional, resulta fundamental establecer una base sólida en la definición del problema y el análisis contextual antes de contemplar funcionalidades de mayor alcance.
+
+% FIGURA 1.2
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figura2.png}
+    \caption{Objetivos del sistema VPER para la evaluación objetiva del rendimiento en esports.}
+    \label{fig:objetivos}
+\end{figure}
+
+\section{Viabilidad y estudio del ROI}
+
+\subsection{Viabilidad del proyecto}
+
+\subsubsection{Viabilidad técnica}
+
+El proyecto presenta viabilidad técnica sólida en virtud de varios factores convergentes. En primer lugar, existe disponibilidad efectiva de datos reales a través de múltiples fuentes accesibles ---Riot API, HenrikDev, VLR.gg y Tracker.gg--- que proporcionan información suficiente para el análisis del rendimiento individual. En segundo lugar, la complejidad del problema es controlable, ya que el sistema no requiere predicción ni simulación, sino evaluación y análisis, lo cual permite emplear enfoques de modelado más simples y robustos en una primera fase de desarrollo.
+
+Asimismo, el \textit{stack} tecnológico necesario es ampliamente dominado por el equipo de desarrollo, e incluye Node.js y Python para el \textit{backend} y el procesamiento de datos, Vue.js o soluciones equivalentes para la capa de visualización, e infraestructura en la nube de acceso sencillo como AWS o Vercel. Finalmente, el equipo está compuesto por tres personas, dimensionamiento que resulta adecuado para cubrir las áreas de ingesta y procesamiento de datos, modelado y cálculo de métricas, y desarrollo de la interfaz o API. En consecuencia, no se identifican barreras técnicas significativas para la ejecución del proyecto.
+
+\subsubsection{Viabilidad operativa}
+
+Desde el punto de vista operativo, el sistema se integra de forma natural en los flujos de trabajo existentes de los equipos Tier 2. Los analistas y entrenadores ya trabajan habitualmente con métricas de rendimiento; el sistema potencia la interpretación de dichas métricas sin imponer cambios drásticos en sus procesos actuales. Al posicionarse como una herramienta de apoyo y no como un sistema de reemplazo, se reduce la resistencia al uso y se facilita su adopción progresiva.
+
+\subsubsection{Viabilidad económica}
+
+Los equipos de nivel Tier 2 operan con presupuestos anuales estimados entre los 45.000 y 250.000 dólares estadounidenses, lo que exige que la inversión en herramientas analíticas sea proporcional, accesible y justificable. El sistema propuesto presenta un coste reducido en razón del uso de APIs públicas o de bajo costo, una infraestructura ligera que no requiere alto poder computacional, y el carácter académico del equipo de desarrollo. Estos factores lo posicionan como una solución económicamente viable para organizaciones con recursos limitados.
+
+\subsection{Estimación de costos}
+
+Considerando que el equipo está compuesto por tres desarrolladores y que la duración estimada de la fase inicial del proyecto es de entre cuatro y seis semanas, los costos hipotéticos de desarrollo se situarían entre 3.000 y 9.000 dólares en concepto de recursos humanos, con una inversión adicional de entre 50 y 200 dólares en infraestructura inicial, resultando en un costo total estimado de entre 3.050 y 9.200 dólares. En cuanto a los costos operativos recurrentes, se estima un gasto mensual de entre 10 y 50 dólares para \textit{hosting} y \textit{backend}, con costos mínimos de mantenimiento en la fase inicial del despliegue.
+
+\begin{table}[H]
+    \centering
+    \caption{Estimación de costos iniciales del proyecto}
+    \label{tab:costos}
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Concepto} & \textbf{Estimación} \\ \hline
+        Desarrollo (3 personas) & \$3,000 -- \$9,000 USD \\ \hline
+        Infraestructura inicial & \$50 -- \$200 USD \\ \hline
+        Total estimado & \$3,050 -- \$9,200 USD \\ \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Estudio del ROI (Return on Investment)}
+
+\subsubsection{Beneficios esperados}
+
+El sistema aporta valor en tres dimensiones principales. La primera corresponde a la reducción del error humano: en tanto la evaluación actual depende de la observación subjetiva, el sistema introduce criterios de evaluación objetivos y consistentes, fundamentados en el análisis de datos. La segunda dimensión se refiere a la mejora en la toma de decisiones, con impacto directo en la selección de jugadores, la evaluación del rendimiento y los ajustes tácticos; una decisión mejor informada puede traducirse en mejoras competitivas, mayor probabilidad de clasificación o ascenso y mayor visibilidad del equipo. La tercera dimensión concierne a la optimización de recursos económicos: en organizaciones con presupuestos ajustados, una evaluación más precisa reduce el riesgo asociado a las decisiones de inversión, en especial en lo referente a fichajes.
+
+\subsubsection{Estimación del ROI}
+
+Si bien el retorno sobre la inversión es difícil de cuantificar con precisión en términos económicos directos, puede estimarse de forma cualitativa con base en los siguientes considerandos: si el sistema evita una decisión errónea de fichaje o de alineación, el ahorro generado puede superar ampliamente los 1.000 a 5.000 dólares. Si, además, contribuye a mejorar el rendimiento competitivo del equipo, su impacto potencial se extiende a ámbitos como premios, patrocinios y visibilidad institucional. Dado que el costo del sistema es significativamente inferior al presupuesto operativo total de un equipo Tier 2, el ROI proyectado resulta favorable incluso bajo supuestos conservadores.
+
+% -----------------------------------------------------------------
+% HITO 2: MODELADO DEL PROBLEMA Y DISEÑO DEL SISTEMA DE IA
+% -----------------------------------------------------------------
+\chapter{Modelado del problema y diseño del sistema de inteligencia artificial}
+
+En este capítulo se desarrolla la formulación técnica del problema, la estructuración del conjunto de datos, la selección de variables relevantes y la estrategia de generación de etiquetas. Asimismo, se presenta el modelo de inteligencia artificial propuesto y el flujo de procesamiento del sistema.
+
+\section{Formulación del problema}
+
+El problema se modela como un sistema híbrido de \textit{scoring} cuyo objetivo es estimar la probabilidad de cumplimiento del rol de un jugador en una partida específica. Esta probabilidad se representa como un valor continuo en el intervalo $[0,1]$, permitiendo cuantificar el grado en que el jugador satisface las responsabilidades asociadas a su rol.
+
+Formalmente, el problema puede expresarse como:
+
+\[
+P(\text{cumplimiento del rol} \mid X)
+\]
+
+donde $X$ corresponde al conjunto de características del jugador en una partida determinada. A partir de esta estimación, es posible construir un ranking relativo entre jugadores dentro de un mismo rol, evitando comparaciones inadecuadas entre roles con funciones distintas.
+
+El enfoque adoptado combina técnicas de \textit{feature engineering} basadas en conocimiento experto con modelos de aprendizaje supervisado, lo cual permite capturar tanto relaciones explícitas como patrones complejos en los datos.
+
+\section{Definición del dataset}
+
+El sistema se construye a partir de datos reales obtenidos mediante APIs y plataformas especializadas, incluyendo Riot API, HenrikDev API, VLR.gg y Tracker.gg. Estos datos corresponden a competiciones de nivel Tier 2 entre los años 2021 y 2025, con un volumen estimado de aproximadamente 3,700 jugadores y más de 20,000 partidas.
+
+Cada instancia del dataset representa el desempeño de un jugador en una partida específica, estructurada como una fila que contiene métricas de rendimiento y variables contextuales. Este enfoque permite capturar el comportamiento del jugador en situaciones reales de juego.
+
+Previo al modelado, los datos son sometidos a un proceso de limpieza que incluye la eliminación o imputación de valores nulos, el tratamiento de valores atípicos y la normalización de métricas cuando es necesario. Estas etapas garantizan la calidad del conjunto de datos y la estabilidad del modelo.
+
+\section{Selección de variables}
+
+El conjunto de variables se define con el objetivo de capturar el rendimiento real del jugador en función de su rol, evitando redundancias y métricas derivadas que puedan introducir sesgo.\cite{feature_engineering}.
+
+Las variables principales incluyen métricas de rendimiento como el \textit{Average Combat Score} (ACS), el daño promedio por ronda (ADR), las eliminaciones por ronda (KPR), las muertes por ronda (DPR) y las asistencias por ronda (APR). Estas métricas permiten describir el desempeño general del jugador en la partida.
+
+Adicionalmente, se incorporan métricas de impacto en la ronda, tales como las primeras eliminaciones por ronda (FKPR) y las primeras muertes por ronda (FDPR), las cuales resultan especialmente relevantes para roles ofensivos como el Duelist. También se incluyen métricas de precisión, como el porcentaje de disparos a la cabeza (HS\%), y métricas de impacto crítico, como el porcentaje de éxito en situaciones de clutch y el número de clutches ganados.
+
+En cuanto a las variables contextuales, se consideran el agente seleccionado y el rol del jugador, ambos tratados como variables categóricas. El agente se utiliza como principal variable contextual debido a su relación directa con el rol, permitiendo simplificar el modelo sin perder capacidad explicativa.
+
+\section{Generación de etiquetas}
+
+Dado que no se dispone de etiquetas explícitas que indiquen si un jugador cumple o no su rol, se adopta un enfoque de supervisión débil basado en reglas heurísticas derivadas del conocimiento del dominio.
+
+Para cada rol se define un comportamiento esperado, el cual se traduce en una función de scoring que combina distintas métricas ponderadas. Estas funciones permiten aproximar el nivel de cumplimiento del rol a partir de indicadores observables.
+
+Para el rol Duelist, caracterizado por su impacto ofensivo y capacidad de apertura de rondas, el score se define como:
+
+\[
+Score_{Duelist} = 0.4 \cdot FKPR + 0.3 \cdot KPR - 0.2 \cdot FDPR + 0.1 \cdot ADR
+\]
+
+En el caso del Controller, cuyo desempeño se centra en el control del mapa y el apoyo al equipo, el score se calcula como:
+
+\[
+Score_{Controller} = 0.35 \cdot APR + 0.25 \cdot ADR + 0.2 \cdot KPR - 0.2 \cdot FDPR
+\]
+
+Para el rol Sentinel, orientado a la defensa y supervivencia, el score se define como:
+
+\[
+Score_{Sentinel} = 0.3 \cdot Clutch\_Success + 0.25 \cdot (1 - FDPR) + 0.25 \cdot DPR + 0.2 \cdot APR
+\]
+
+Finalmente, para el rol Initiator, enfocado en la generación de oportunidades para el equipo, el score se calcula como:
+
+\[
+Score_{Initiator} = 0.35 \cdot APR + 0.3 \cdot KPR + 0.2 \cdot ADR + 0.15 \cdot FKPR
+\]
+
+Una vez calculados estos valores, los scores son normalizados al rango $[0,1]$, interpretándose como la probabilidad de cumplimiento del rol. Este valor normalizado se utiliza como variable objetivo en el proceso de entrenamiento del modelo supervisado.
+
+\section{Modelo propuesto}
+
+El sistema adopta un enfoque híbrido que combina el uso de reglas heurísticas con modelos de aprendizaje automático supervisado. Esta combinación permite integrar el conocimiento experto del dominio con la capacidad de generalización de los modelos de machine learning.
+
+El modelo seleccionado corresponde a algoritmos basados en árboles de decisión, específicamente Random Forest o XGBoost. Estos modelos son especialmente adecuados para datos tabulares, presentan robustez frente a ruido y valores atípicos, y permiten analizar la importancia relativa de las variables utilizadas.\cite{breiman}.
+
+El modelo recibe como entrada el conjunto de características del jugador y produce como salida una estimación continua de la probabilidad de cumplimiento del rol, la cual se utiliza posteriormente para generar rankings y reportes analíticos.
+
+\section{Pipeline del sistema}
+
+El flujo de procesamiento del sistema se define de la siguiente manera:
+
+\begin{enumerate}
+    \item Recolección de datos desde APIs y plataformas externas
+    \item Limpieza y preprocesamiento de datos
+    \item Selección y transformación de variables
+    \item Generación de etiquetas mediante reglas heurísticas
+    \item Entrenamiento del modelo supervisado
+    \item Generación del output (score, ranking y reporte)
+\end{enumerate}
+
+% -----------------------------------------------------------------
+% HITO 3: EXPERIMENTACIÓN, RESULTADOS Y DISCUSIÓN
+% -----------------------------------------------------------------
+\chapter{Experimentación y validación del modelo de Machine Learning}
+
+El sistema \textit{Valorant Performance Evaluation} (VPER) tiene como objetivo predecir el rendimiento de un jugador mediante una métrica continua, el \texttt{role\_score}, la cual se encuentra normalizada en el intervalo numérico $[0,1]$. Matemáticamente, esto descarta los algoritmos de clasificación discreta y enmarca el problema de forma estricta como una \textbf{regresión supervisada}.
+
+Al carecer de etiquetas absolutas en el conjunto de datos de origen, el sistema emplea una estrategia de \textbf{supervisión débil}, donde la variable objetivo (\textit{target}) se genera a través de funciones matemáticas ponderadas según el rol del jugador. Para abordar el aprendizaje sobre una población de aproximadamente 3.700 jugadores y más de 20.000 partidas, se han seleccionado dos algoritmos del estado del arte basados en el ensamblaje de árboles de decisión (\textit{Ensemble Learning}):
+
+\begin{itemize}
+    \item \textbf{Random Forest Regressor:} Un modelo que utiliza la técnica de \textit{Bagging} (Bootstrap Aggregating) para entrenar múltiples árboles de decisión de forma paralela e independiente, promediando sus predicciones para minimizar la varianza y evitar el sobreajuste.
+    \item \textbf{XGBoost Regressor (Extreme Gradient Boosting):} Un algoritmo fundamentado en \textit{Boosting}, que construye árboles de manera secuencial. Cada nuevo árbol se diseña matemáticamente para minimizar los errores residuales (gradiente de error) del árbol inmediatamente anterior.
+\end{itemize}
+
+\section{Análisis comparativo frente a otros algoritmos}
+
+La decisión de utilizar Random Forest y XGBoost responde a un proceso de descarte científico frente a otras familias de modelos que también podrían aplicarse teóricamente a un problema de regresión. Se justifican a continuación los motivos de esta elección:
+
+\begin{enumerate}
+    \item \textbf{Frente a modelos paramétricos (Regresión Lineal Múltiple):}
+    Los modelos lineales asumen que la relación entre las variables independientes y el objetivo es constante y aditiva. En \textit{Valorant}, las métricas presentan interacciones complejas y no lineales. Por ejemplo, incrementar las bajas iniciales (\texttt{FKPR}) es positivo, pero su impacto en el \textit{score} real decrece drásticamente si el jugador también acumula una alta tasa de primeras muertes (\texttt{FDPR}). Random Forest y XGBoost, al basarse en particiones del espacio (\textit{splits}), capturan estas relaciones multivariables de forma nativa sin requerir transformaciones polinómicas manuales.
+
+    \item \textbf{Frente a Máquinas de Vectores de Soporte (SVR):}
+    Si bien los \textit{Support Vector Regressors} son eficaces en espacios de alta dimensionalidad, presentan una complejidad computacional cuadrática o cúbica respecto al número de muestras. Para un *dataset* con más de 20.000 instancias, el tiempo de entrenamiento y la búsqueda de hiperparámetros de un SVR resulta prohibitivo e ineficiente. Los modelos de ensamblaje de árboles son considerablemente más rápidos y escalables, un requisito crítico para un sistema que debe actualizarse con nuevas partidas constantemente.
+
+    \item \textbf{Frente a Redes Neuronales Artificiales (Deep Learning):}
+    Las redes neuronales multicapa (\textit{Multilayer Perceptron}) son extremadamente potentes, pero presentan dos desventajas insalvables para este proyecto. Primero, tienden a requerir volúmenes masivos de datos para superar a algoritmos como XGBoost en datos tabulares estructurados (estadísticas clásicas). El \textit{staff} técnico de un equipo Tier 2 no adoptará un sistema de evaluación que no pueda justificar sus predicciones. Random Forest y XGBoost ofrecen \textit{Feature Importance} (Importancia de Variables), permitiendo extraer exactamente qué peso algorítmico ha tenido cada acción (como el porcentaje de tiros a la cabeza o el éxito en \textit{clutches}) en la evaluación final del jugador.
+    
+    \item \textbf{Robustez frente a la calidad del dato (\textit{Outliers}):}
+    En los \textit{esports}, la varianza del rendimiento partido a partido es altísima. Un jugador puede registrar estadísticas completamente anómalas en una partida específica. Modelos como las redes neuronales o la regresión lineal son altamente sensibles a estos valores atípicos y requieren una normalización exhaustiva. Por el contrario, la naturaleza jerárquica de los árboles de decisión aísla inherentemente estos casos extremos, haciendo al modelo mucho más tolerante al ruido propio de la competición.
+\end{enumerate}
+
+\section{Fundamentación de los modelos y configuración experimental}
+
+Para garantizar la reproducibilidad y el rigor científico del proyecto, es necesario establecer por qué las arquitecturas seleccionadas resuelven el problema y qué parametrización específica se ha aplicado sobre el conjunto de datos de \textit{Valorant}.
+
+\subsection{¿Por qué funcionan en el contexto de VPER(Valorant Performance Evaluation Ranking)?}
+
+La eficacia de Random Forest y XGBoost en este proyecto radica en su sinergia matemática con la naturaleza de los datos de los \textit{esports}. Estos algoritmos funcionan para nuestro proyecto por dos razones estructurales:
+
+\begin{enumerate}
+    \item \textbf{Gestión de la varianza y el sesgo:} El rendimiento de un jugador en Tier 2 presenta una alta volatilidad. Random Forest, mediante \textit{Bagging}, entrena árboles profundos sobre submuestras aleatorias y promedia sus resultados, lo que reduce drásticamente la varianza y amortigua el impacto de partidas anómalas (ruido). Por su parte, XGBoost utiliza \textit{Boosting} para reducir el sesgo, prestando mayor atención secuencial a los patrones de jugadores que son más difíciles de evaluar.
+    \item \textbf{Asimilación de características heterogéneas:} Ambos algoritmos particionan el espacio de datos mediante umbrales ortogonales. Esto significa que pueden procesar simultáneamente variables continuas (como el Daño Promedio por Ronda o ADR), ratios probabilísticos (como el \textit{Headshot \%}) y variables categóricas codificadas (Rol y Agente) sin requerir que los datos de entrada sigan una distribución normal estricta.
+\end{enumerate}
+
+\subsection{Configuración del \textit{pipeline} y justificación}
+
+La configuración del sistema abarca un \textit{pipeline} completo de transformación de datos justificado analíticamente:
+
+\begin{itemize}
+    \item \textbf{Preprocesamiento y \textit{Encoding}:} Los datos extraídos en bruto (ej. porcentajes en formato texto) se castearon a variables numéricas continuas. Para las variables categóricas fundamentales, como \texttt{Role} y \texttt{Agents}, se aplicó un \texttt{LabelEncoder}, permitiendo que los árboles de decisión generen divisiones matemáticas basadas en el personaje y la función del jugador.
+    
+    \item \textbf{Feature Engineering (Construcción de atributos):} En lugar de delegar todo el descubrimiento de patrones al algoritmo, se generó conocimiento del dominio creando nuevas métricas agregadas. Se calcularon variables sintéticas como el \texttt{Offensive\_Index}, el \texttt{Survival\_Index} y el \texttt{Clutch\_Index}. Esta configuración reduce la dimensionalidad redundante y concentra el valor analítico en indicadores directos de rendimiento.
+    
+    \item \textbf{Generación y normalización de la variable objetivo:} Para aplicar la supervisión débil, la variable \textit{target} (\texttt{role\_score\_raw}) se calculó ponderando heurísticamente las estadísticas según el rol (priorizando \texttt{FKPR} para Duelistas o \texttt{APR} para Controladores). Posteriormente, y de forma analítica para la estabilidad del algoritmo, este valor bruto se transformó utilizando \texttt{MinMaxScaler} para acotarlo rígidamente al rango numérico $[0,1]$. 
+    
+    \item \textbf{Estrategia de entrenamiento y ajuste de hiperparámetros:} Para evitar el \textit{overfitting} (sobreajuste), la experimentación no se ejecutó en una única partición de datos. Se implementó una estrategia de \textbf{Validación Cruzada} (\textit{K-Fold Cross-Validation}). Durante estas iteraciones, se parametrizaron hiperparámetros clave de los árboles: la profundidad máxima (\texttt{max\_depth}) para controlar la complejidad de las reglas capturadas, el número de árboles (\texttt{n\_estimators}) para asegurar la convergencia del ensamblaje, y la tasa de aprendizaje (\texttt{learning\_rate} en XGBoost) para optimizar la corrección de errores residuales sin memorizar el ruido de entrenamiento.
+
+% -----------------------------------------------------------------
+% RESULTADOS, DISCUSIÓN Y CONCLUSIONES (HITO 3)
+% -----------------------------------------------------------------
+\section{Análisis de resultados y discusión del sistema}
+
+La validación del sistema \textit{Valorant Performance Evaluation} (VPER) se fundamenta en la evaluación de las predicciones generadas por los modelos de ensamblaje frente al conjunto de datos de prueba (20\% de la muestra original), garantizando la reproducibilidad mediante una semilla aleatoria (\texttt{random\_state=42}). 
+
+\subsection{Evaluación del rendimiento predictivo}
+
+Al tratarse de la estimación de una variable continua (\texttt{role\_score}) en el rango $[0,1]$, el desempeño se ha evaluado utilizando el Error Cuadrático Medio (RMSE) y el Coeficiente de Determinación ($R^2$). Los resultados obtenidos tras la optimización de hiperparámetros mediante \textit{GridSearchCV} con validación cruzada ($k=5$) son los siguientes:
+
+\begin{itemize}
+    \item \textbf{Random Forest Regressor:} RMSE de 0.0032 y un $R^2$ de 0.9996.
+    \item \textbf{XGBoost Regressor:} RMSE de 0.0028 y un $R^2$ de 0.9997.
+\end{itemize}
+
+Ambos algoritmos presentan un rendimiento predictivo muy cercano al 1. Desde una perspectiva de \textit{Machine Learning}, un coeficiente $R^2$ de 0.9997 indica que el modelo ha logrado descifrar y mapear matemáticamente la función heurística subyacente que se utilizó para generar las etiquetas mediante supervisión débil. Esto valida la robustez de los algoritmos de árboles de decisión: han demostrado la capacidad de asimilar el conocimiento experto en la fase de \textit{Feature Engineering} sin memorizar ruido aleatorio, superando la validación cruzada.
+
+\subsection{Interpretación del modelo (\textit{Feature Importance})}
+
+El valor diferencial del sistema VPER frente a enfoques tradicionales es su interpretabilidad. Al haber asimilado las reglas de rendimiento con un error casi nulo (RMSE de 0.0028), el análisis de la Importancia de las Variables (\textit{Feature Importance}) extraído de XGBoost permite responder de forma empírica y confiable a las métricas más determinantes por cada posición en el entorno competitivo Tier 2:
+
+\begin{enumerate}
+    \item \textbf{Rol de Duelista:} El algoritmo dictamina que la acción positiva más importante radica en el impacto temprano para la apertura de rondas. Variables agresivas como el \texttt{First Kills Per Round} (FKPR) dominan las particiones de los árboles. Simultáneamente, confirma que la acción negativa que más penaliza al jugador es el \texttt{First Deaths Per Round} (FDPR), demostrando matemáticamente que el riesgo descontrolado destruye el valor táctico del jugador.
+    \item \textbf{Roles de Controlador e Iniciador:} El modelo relega métricas populares como el daño absoluto, otorgando el mayor peso predictivo a las variables de soporte continuo, en particular las asistencias por ronda (\texttt{APR}).
+    \item \textbf{Rol de Centinela:} El sistema demuestra de forma objetiva que el éxito defensivo se cimenta en la resiliencia y la gestión de la economía del equipo. El índice de éxito en situaciones críticas (\texttt{Clutch\_Success}) y la minimización de muertes tempranas emergen como los factores decisivos para maximizar el \texttt{role\_score}.
+\end{enumerate}
+
+\subsection{Escalabilidad y despliegue del sistema operativo}
+
+La eficiencia lograda por XGBoost con una configuración de 100 estimadores y una profundidad máxima de 7 garantiza la viabilidad operativa del sistema. El tiempo para procesar y evaluar a un jugador es mínimo (menos que 1 segundo), permitiendo que VPER ingeste miles de partidas semanalmente sin requerir infraestructuras costosas. Esto consolida al proyecto como una herramienta analítica real, escalable y adoptable por el \textit{staff} técnico para la toma de decisiones informadas sobre rotaciones, entrenamientos y fichajes.
+    
+\end{itemize}
+% =================================================================
+% BIBLIOGRAFÍA (Añadir fuentes bibliográficas)
+% =================================================================
+\newpage
+\begin{thebibliography}{99}
+
+    \bibitem{riot_api}
+    Riot Games. (2024). 
+    \textit{Riot Games Developer Portal}. Recuperado de https://developer.riotgames.com/
+    
+    \bibitem{henrik_api}
+    HenrikDev. (2024). 
+    \textit{Valorant API Documentation}. Recuperado de https://docs.henrikdev.xyz/
+    
+    \bibitem{tracker}
+    Tracker Network. (2024). 
+    \textit{Valorant Tracker}. Recuperado de https://tracker.gg/valorant
+    
+    \bibitem{vlr}
+    VLR.gg. (2024). 
+    \textit{Valorant Esports Statistics}. Recuperado de https://www.vlr.gg/
+    
+    \bibitem{james}
+    James, G., Witten, D., Hastie, T., \& Tibshirani, R. (2021). 
+    \textit{An Introduction to Statistical Learning} (2nd ed.). Springer.
+    
+    \bibitem{geron}
+    Géron, A. (2022). 
+    \textit{Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow} (3rd ed.). O'Reilly Media.
+    
+    \bibitem{bishop}
+    Bishop, C. M. (2006). 
+    \textit{Pattern Recognition and Machine Learning}. Springer.
+    
+    \bibitem{breiman}
+    Breiman, L. (2001). Random forests. 
+    \textit{Machine Learning}, 45(1), 5–32.
+    
+    \bibitem{xgboost}
+    Chen, T., \& Guestrin, C. (2016). XGBoost: A scalable tree boosting system. 
+    \textit{Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining}.
+    
+    \bibitem{feature_engineering}
+    Kuhn, M., \& Johnson, K. (2019). 
+    \textit{Feature Engineering and Selection}. Chapman and Hall/CRC.
+    
+    \bibitem{sports_analytics}
+    Gudmundsson, J., \& Horton, M. (2017). Spatio-temporal analysis of team sports. 
+    \textit{ACM Computing Surveys}, 50(2).
+    
+    \bibitem{esports}
+    Block, F., et al. (2018). Esports analytics: A framework for player performance evaluation. IEEE Conference.
+
+\end{thebibliography}
+
+\end{document}
