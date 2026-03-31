@@ -330,9 +330,6 @@ La configuración del sistema abarca un \textit{pipeline} completo de transforma
     
     \item \textbf{Estrategia de entrenamiento y ajuste de hiperparámetros:} Para evitar el \textit{overfitting} (sobreajuste), la experimentación no se ejecutó en una única partición de datos. Se implementó una estrategia de \textbf{Validación Cruzada} (\textit{K-Fold Cross-Validation}). Durante estas iteraciones, se parametrizaron hiperparámetros clave de los árboles: la profundidad máxima (\texttt{max\_depth}) para controlar la complejidad de las reglas capturadas, el número de árboles (\texttt{n\_estimators}) para asegurar la convergencia del ensamblaje, y la tasa de aprendizaje (\texttt{learning\_rate} en XGBoost) para optimizar la corrección de errores residuales sin memorizar el ruido de entrenamiento.
 
-% -----------------------------------------------------------------
-% RESULTADOS, DISCUSIÓN Y CONCLUSIONES (HITO 3)
-% -----------------------------------------------------------------
 \section{Análisis de resultados y discusión del sistema}
 
 La validación del sistema \textit{Valorant Performance Evaluation} (VPER) se fundamenta en la evaluación de las predicciones generadas por los modelos de ensamblaje frente al conjunto de datos de prueba (20\% de la muestra original), garantizando la reproducibilidad mediante una semilla aleatoria (\texttt{random\_state=42}). 
@@ -363,6 +360,7 @@ El valor diferencial del sistema VPER frente a enfoques tradicionales es su inte
 La eficiencia lograda por XGBoost con una configuración de 100 estimadores y una profundidad máxima de 7 garantiza la viabilidad operativa del sistema. El tiempo para procesar y evaluar a un jugador es mínimo (menos que 1 segundo), permitiendo que VPER ingeste miles de partidas semanalmente sin requerir infraestructuras costosas. Esto consolida al proyecto como una herramienta analítica real, escalable y adoptable por el \textit{staff} técnico para la toma de decisiones informadas sobre rotaciones, entrenamientos y fichajes.
     
 \end{itemize}
+
 % =================================================================
 % BIBLIOGRAFÍA (Añadir fuentes bibliográficas)
 % =================================================================
