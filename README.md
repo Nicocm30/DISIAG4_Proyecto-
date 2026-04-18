@@ -1,6 +1,6 @@
 # DISIAG4_Proyecto-
 
-## Valorant Performance Evaluation (VPER)
+## Valorant Role Compliance Evaluation (VRCE)
 
 ### Descripción del proyecto
 

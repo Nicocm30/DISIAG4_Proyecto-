@@ -34,6 +34,10 @@
 % -----------------------------------------------------------------
 % 3. CONTENIDO PRINCIPAL
 % -----------------------------------------------------------------
+
+% -----------------------------------------------------------------
+% Hito 1
+% -----------------------------------------------------------------
 \chapter{Definición del problema y determinación del alcance}
 
 En este capítulo se presenta la definición del problema abordado en el proyecto \textit{Valorant Role Compliance Evaluation}, así como la determinación de su alcance, viabilidad y estudio del retorno sobre la inversión. El objetivo es establecer una base conceptual, operativa y económica sólida para el desarrollo de un sistema de inteligencia artificial orientado a la estimación objetiva del cumplimiento del rol de los jugadores en competiciones de \textit{Valorant}.
@@ -183,6 +187,156 @@ El sistema aporta valor en tres dimensiones principales. La primera corresponde 
 \subsubsection{Estimación del ROI}
 
 Si bien el retorno sobre la inversión es difícil de cuantificar con precisión en términos económicos directos, puede estimarse de forma cualitativa con base en los siguientes considerandos: si el sistema evita una decisión errónea de fichaje o de alineación, el ahorro generado puede superar ampliamente los 1.000 a 5.000 dólares. Si, además, contribuye a mejorar el rendimiento competitivo del equipo mediante una mejor evaluación funcional de sus jugadores, su impacto potencial se extiende a ámbitos como premios, patrocinios y visibilidad institucional. Dado que el costo del sistema es significativamente inferior al presupuesto operativo total de un equipo Tier 2, el ROI proyectado resulta favorable incluso bajo supuestos conservadores.
+
+% -----------------------------------------------------------------
+% HITO 2: MODELADO DEL PROBLEMA Y DISEÑO DEL SISTEMA DE IA
+% -----------------------------------------------------------------
+\chapter{Modelado del problema y diseño del sistema de inteligencia artificial}
+
+En este capítulo se desarrolla la formulación técnica del problema, la estructuración del conjunto de datos, la selección de variables relevantes y la estrategia de generación de etiquetas. Asimismo, se presenta el modelo de inteligencia artificial propuesto y el flujo de procesamiento del sistema.
+
+\section{Formulación del problema}
+
+El problema se modela como un sistema híbrido de \textit{scoring} cuyo objetivo es estimar la probabilidad de cumplimiento del rol de un jugador en una partida específica. Esta probabilidad se representa como un valor continuo en el intervalo $[0,1]$, permitiendo cuantificar el grado en que el jugador satisface las responsabilidades asociadas a su rol.
+
+Formalmente, el problema puede expresarse como:
+
+\[
+P(\text{cumplimiento del rol} \mid X)
+\]
+
+donde $X$ corresponde al conjunto de características del jugador en una partida determinada. A partir de esta estimación, es posible construir un ranking relativo entre jugadores dentro de un mismo rol, evitando comparaciones inadecuadas entre roles con funciones distintas.
+
+El enfoque adoptado combina técnicas de \textit{feature engineering} basadas en conocimiento experto con modelos de aprendizaje supervisado, lo cual permite capturar tanto relaciones explícitas como patrones complejos en los datos.
+
+\section{Definición del dataset}
+
+El sistema se construye a partir de datos reales obtenidos mediante APIs y plataformas especializadas, incluyendo Riot API, HenrikDev API, VLR.gg y Tracker.gg. Estos datos corresponden a competiciones de nivel Tier 2 entre los años 2021 y 2025, con un volumen estimado de aproximadamente 3,700 jugadores y más de 20,000 partidas.
+
+Cada instancia del dataset representa el desempeño de un jugador en una partida específica, estructurada como una fila que contiene métricas de rendimiento y variables contextuales. Este enfoque permite capturar el comportamiento del jugador en situaciones reales de juego.
+
+Previo al modelado, los datos son sometidos a un proceso de limpieza que incluye la eliminación o imputación de valores nulos, el tratamiento de valores atípicos y la normalización de métricas cuando es necesario. Estas etapas garantizan la calidad del conjunto de datos y la estabilidad del modelo.
+
+\subsection{Repositorio del proyecto}
+
+El desarrollo del sistema, incluyendo el procesamiento de datos, la generación de variables y el entrenamiento de modelos, se encuentra implementado en un repositorio de control de versiones. Este repositorio incluye notebooks de análisis exploratorio, scripts de preprocesamiento y entrenamiento, así como la definición completa del pipeline del sistema.
+
+\begin{center}
+\url{https://github.com/Nicocm30/DISIAG4_Proyecto-.git}
+\end{center}
+
+\section{Selección de variables}
+
+A partir del dataset original, se realiza un proceso de limpieza, transformación y selección de variables en un entorno de análisis reproducible (notebook). Este proceso incluye la corrección de tipos de datos, la extracción de métricas a partir de columnas compuestas y la generación de nuevas variables derivadas.
+
+Las variables finales utilizadas en el modelo son las siguientes:
+
+\begin{itemize}
+    \item \textbf{Average Combat Score (ACS)}
+    \item \textbf{Average Damage Per Round (ADR)}
+    \item \textbf{Kills Per Round (KPR)}
+    \item \textbf{Assists Per Round (APR)}
+    \item \textbf{First Kills Per Round (FKPR)}
+    \item \textbf{First Deaths Per Round (FDPR)}
+    \item \textbf{Headshot \%}
+    \item \textbf{Clutch Success \%}
+    \item \textbf{Clutch\_Success\_Ratio}
+    \item \textbf{Clutches\_Won}
+    \item \textbf{KDR (Kill-Death Ratio)}
+    \item \textbf{Agents}
+    \item \textbf{Role}
+\end{itemize}
+
+La variable \textit{Role} no está presente originalmente en el dataset, por lo que se genera mediante un proceso de mapeo a partir del agente utilizado, estableciendo una correspondencia basada en conocimiento del dominio del juego.
+
+Adicionalmente, se realiza un proceso de \textit{encoding} para las variables categóricas y normalización de las variables numéricas cuando es necesario, con el objetivo de garantizar la estabilidad y el correcto funcionamiento de los modelos de aprendizaje automático.
+
+\section{Análisis exploratorio de datos}
+
+Se realiza un análisis exploratorio del dataset con el objetivo de comprender la distribución de las variables, identificar relaciones relevantes y detectar posibles anomalías.
+
+En primer lugar, se analizan las distribuciones de variables clave como KPR, ADR, APR y FDPR mediante histogramas, observándose comportamientos no normales y presencia de asimetrías. Esto justifica el uso de modelos no lineales como XGBoost.
+
+Se lleva a cabo un análisis de valores atípicos (outliers), identificando partidas con rendimientos extremos. Estos valores no son eliminados, ya que forman parte del comportamiento real del entorno competitivo, sino que son tratados mediante modelos robustos.
+
+Adicionalmente, se calcula la matriz de correlación entre variables, evidenciando relaciones significativas entre métricas ofensivas (KPR, FKPR) y métricas de impacto (ADR), así como dependencias entre variables derivadas.
+
+Se realiza también un análisis segmentado por rol, permitiendo observar diferencias estructurales en el comportamiento de las métricas según la función del jugador, lo cual respalda el enfoque de modelado basado en roles.
+
+Finalmente, se evalúa el comportamiento del modelo mediante gráficos de predicción (\textit{Real vs Predicted}) y análisis de residuos, permitiendo verificar la calidad del ajuste y la ausencia de patrones sistemáticos en los errores.
+
+\section{Generación de etiquetas}
+
+Dado que el dataset original no incluye una variable objetivo que represente el cumplimiento del rol, se adopta un enfoque de supervisión débil basado en reglas heurísticas.
+
+El rol del jugador se obtiene a partir del agente utilizado, permitiendo definir un comportamiento esperado para cada tipo de rol. En función de estas expectativas, se construyen funciones de scoring específicas que combinan distintas métricas relevantes.
+
+Para cada rol se construye una función de scoring que combina distintas métricas ponderadas. Estas funciones permiten aproximar el nivel de cumplimiento del rol a partir de indicadores observables.
+
+Para el rol Duelist, caracterizado por su impacto ofensivo y capacidad de apertura de rondas, el score se define como:
+
+\[
+Score_{Duelist} = 0.4 \cdot FKPR + 0.3 \cdot KPR - 0.2 \cdot FDPR + 0.1 \cdot ADR
+\]
+
+En el caso del Controller, cuyo desempeño se centra en el control del mapa y el apoyo al equipo, el score se calcula como:
+
+\[
+Score_{Controller} = 0.35 \cdot APR + 0.25 \cdot ADR + 0.2 \cdot KPR - 0.2 \cdot FDPR
+\]
+
+Para el rol Sentinel, orientado a la defensa y supervivencia, el score se define como:
+
+\[
+Score_{Sentinel} = 0.3 \cdot Clutch\_Success + 0.25 \cdot (1 - FDPR) + 0.25 \cdot DPR + 0.2 \cdot APR
+\]
+
+Finalmente, para el rol Initiator, enfocado en la generación de oportunidades para el equipo, el score se calcula como:
+
+\[
+Score_{Initiator} = 0.35 \cdot APR + 0.3 \cdot KPR + 0.2 \cdot ADR + 0.15 \cdot FKPR
+\]
+
+Una vez calculado el score para cada jugador, se aplica una normalización al rango $[0,1]$, interpretándose como la probabilidad de cumplimiento del rol.
+
+Este valor constituye la variable objetivo (\textit{target}) del modelo supervisado, permitiendo transformar un problema sin etiquetas explícitas en un problema de regresión bien definido.
+
+\section{Modelo propuesto}
+
+El sistema adopta un enfoque híbrido que combina reglas heurísticas con modelos de aprendizaje automático supervisado. Esta estrategia permite integrar conocimiento experto del dominio con la capacidad de generalización de los modelos.
+
+Se seleccionan algoritmos basados en árboles de decisión, específicamente Random Forest y XGBoost, debido a su robustez frente a datos tabulares, su tolerancia a valores atípicos y su capacidad para modelar relaciones no lineales.
+
+El modelo recibe como entrada el conjunto de variables del jugador y produce como salida una estimación continua de la probabilidad de cumplimiento del rol.
+
+Adicionalmente, se analiza la importancia de las variables mediante técnicas de \textit{feature importance}, identificando los atributos más influyentes en la predicción. Este análisis permite interpretar el comportamiento del modelo y validar su coherencia con el conocimiento del dominio.
+
+\section{Métricas de evaluación}
+
+Dado que el problema se modela como una regresión sobre un valor continuo en el intervalo $[0,1]$, se utilizan métricas estándar de evaluación para modelos de regresión:
+
+\begin{itemize}
+    \item \textbf{RMSE (Root Mean Squared Error):} penaliza errores grandes, siendo especialmente útil para detectar desviaciones significativas en la predicción.
+
+    \item \textbf{MAE (Mean Absolute Error):} proporciona una medida interpretable del error promedio del modelo.
+
+    \item \textbf{R\textsuperscript{2} (Coeficiente de determinación):} evalúa la proporción de varianza explicada por el modelo.
+\end{itemize}
+
+Adicionalmente, se analiza visualmente el desempeño del modelo mediante gráficos de valores reales vs predichos y análisis de residuos, lo cual permite evaluar la calidad del ajuste y detectar posibles sesgos en las predicciones.
+
+\section{Pipeline del sistema}
+
+El flujo de procesamiento del sistema se define de la siguiente manera:
+
+\begin{enumerate}
+    \item Recolección de datos desde APIs y plataformas externas
+    \item Limpieza y preprocesamiento de datos
+    \item Selección y transformación de variables
+    \item Generación de etiquetas mediante reglas heurísticas
+    \item Entrenamiento del modelo supervisado
+    \item Generación del output (probabilidad de cumplimiento, ranking y reporte)
+\end{enumerate}
 
 % =================================================================
 % BIBLIOGRAFÍA (Añadir fuentes bibliográficas)
