@@ -4,7 +4,7 @@
 \hypersetup{
     colorlinks=true,
     linkcolor=black,
-    filecolor=magenta,
+    filecolor=magenta,      
     urlcolor=blue,
     citecolor=black,
 }
@@ -33,10 +33,6 @@
 
 % -----------------------------------------------------------------
 % 3. CONTENIDO PRINCIPAL
-% -----------------------------------------------------------------
-
-% -----------------------------------------------------------------
-% Hito 1
 % -----------------------------------------------------------------
 \chapter{Definición del problema y determinación del alcance}
 
@@ -317,9 +313,9 @@ Dado que el problema se modela como una regresión sobre un valor continuo en el
 
 \begin{itemize}
     \item \textbf{RMSE (Root Mean Squared Error):} penaliza errores grandes, siendo especialmente útil para detectar desviaciones significativas en la predicción.
-
+    
     \item \textbf{MAE (Mean Absolute Error):} proporciona una medida interpretable del error promedio del modelo.
-
+    
     \item \textbf{R\textsuperscript{2} (Coeficiente de determinación):} evalúa la proporción de varianza explicada por el modelo.
 \end{itemize}
 
@@ -338,6 +334,134 @@ El flujo de procesamiento del sistema se define de la siguiente manera:
     \item Generación del output (probabilidad de cumplimiento, ranking y reporte)
 \end{enumerate}
 
+% -----------------------------------------------------------------
+% HITO 3: EXPERIMENTACIÓN, RESULTADOS Y DISCUSIÓN
+% -----------------------------------------------------------------
+\chapter{Experimentación y validación del modelo de Machine Learning}
+
+El sistema Valorant Role Compliance Evaluation (VRCE) tiene como objetivo estimar el grado de cumplimiento del rol que desempeña un jugador mediante una métrica continua, el \textit{role\_score}, la cual se encuentra normalizada en el intervalo numérico $[0, 1]$. Matemáticamente, esto enmarca el problema como una \textbf{regresión supervisada}, descartando algoritmos de clasificación discreta.
+
+Al carecer de etiquetas absolutas en el conjunto de datos de origen, el sistema emplea una estrategia de \textbf{supervisión débil}, donde la variable objetivo (\textit{target}) se genera a través de funciones matemáticas ponderadas según el rol del jugador. Para abordar el aprendizaje sobre una población de aproximadamente 3.700 jugadores y más de 20.000 partidas, se han seleccionado dos algoritmos del estado del arte basados en el ensamblaje de árboles de decisión (\textit{Ensemble Learning}):
+
+\begin{itemize}
+    \item \textbf{Random Forest Regressor:} Un modelo que utiliza la técnica de \textit{Bagging} (Bootstrap Aggregating) para entrenar múltiples árboles de decisión de forma paralela e independiente, promediando sus predicciones para minimizar la varianza y evitar el sobreajuste.
+    \item \textbf{XGBoost Regressor (Extreme Gradient Boosting):} Un algoritmo fundamentado en \textit{Boosting}, que construye árboles de manera secuencial. Cada nuevo árbol se diseña matemáticamente para minimizar los errores residuales (gradiente de error) del árbol inmediatamente anterior.
+\end{itemize}
+
+\section{Análisis comparativo entre modelos entrenados}
+
+La validación experimental del notebook se ha realizado con un \textbf{baseline lineal} (Regresión Lineal Múltiple) y dos modelos de ensamblaje: \textbf{Random Forest Regressor} y \textbf{XGBoost Regressor}. El baseline se utiliza como referencia mínima para justificar empíricamente que los modelos seleccionados capturan mejor la estructura no lineal del problema.
+
+La ventaja de estos algoritmos radica en su capacidad para capturar interacciones complejas sin transformaciones polinómicas manuales. Además, frente a alternativas más opacas, los árboles de decisión permiten extraer \textbf{Feature Importance}, lo cual facilita justificar la evaluación ante el staff técnico.
+
+\begin{table}[h]
+\centering
+\caption{Comparativa de rendimiento en test: baseline lineal vs modelos de ensamblaje}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Modelo} & \textbf{RMSE} & \textbf{MAE} & \textbf{$R^2$} \\ \hline
+Regresión Lineal (Baseline) & 0.0990 & 0.0828 & 0.6650 \\ \hline
+\textbf{Random Forest} & 0.0032 & 0.0018 & 0.9996 \\ \hline
+\textbf{XGBoost} & \textbf{0.0028} & \textbf{0.0012} & \textbf{0.9997} \\ \hline
+\end{tabular}
+\end{table}
+
+
+
+A continuación, se detallan las razones técnicas que validan la superioridad de los modelos de ensamblaje en este contexto:
+
+\begin{enumerate}
+    \item \textbf{Captura de interacciones complejas y no lineales:} Los modelos lineales asumen que cada variable afecta al \textit{score} de forma independiente. Sin embargo, en Valorant existen interacciones críticas: por ejemplo, una alta tasa de bajas iniciales (\textit{FKPR}) pierde su valor táctico si el jugador también registra una alta tasa de muertes tempranas (\textit{FDPR}). Mientras que un modelo lineal requeriría transformaciones polinómicas manuales (crear variables complejas como $FKPR \times FDPR$) para entender esto, los árboles de decisión segmentan el espacio de datos de forma jerárquica, aprendiendo estas reglas de contexto de manera nativa.
+    
+    \item \textbf{Escalabilidad y eficiencia computacional:} Se descartó el uso de Máquinas de Vectores de Soporte (SVR) debido a su \textbf{complejidad computacional prohibitiva}. El coste de entrenamiento de un SVR crece de forma cuadrática o cúbica respecto al número de muestras ($O(n^2)$ o $O(n^3)$); para un \textit{dataset} con más de 20,000 instancias, el tiempo de procesamiento e iteración de hiperparámetros resultaría ineficiente. XGBoost, optimizado para ejecución en paralelo, procesa este volumen de datos en segundos.
+    
+    \item \textbf{Trazabilidad de la inferencia frente a la opacidad de modelos de alta dimensionalidad:} Si bien las arquitecturas de aprendizaje profundo actúan como aproximadores universales de gran eficacia, su naturaleza no lineal y el uso de parámetros latentes dificultan la auditoría directa de la lógica de decisión. El sistema VRCE prioriza la explicabilidad intrínseca(su propia estructura matemática es comprensible para un ser humano) mediante vectores de \textit{Feature Importance}, facilitando que el staff técnico realice una atribución de características precisa para discernir qué acciones tácticas (como la resolución de \textit{clutches} o la generación de asistencias) están ponderando positiva o negativamente la estimación final del cumplimiento del rol.
+
+    \item \textbf{Robustez frente a la calidad del dato (\textit{Outliers}):}
+    En los \textit{esports}, la varianza del rendimiento partido a partido es altísima. Un jugador puede registrar estadísticas completamente anómalas en una partida específica. Modelos como las redes neuronales o la regresión lineal son altamente sensibles a estos valores atípicos y requieren una normalización exhaustiva. Por el contrario, la naturaleza jerárquica de los árboles de decisión aísla inherentemente estos casos extremos, haciendo al modelo mucho más tolerante al ruido propio de la competición.
+
+\end{enumerate}
+
+\section{Fundamentación de los modelos y configuración experimental}
+
+Para garantizar la reproducibilidad y el rigor científico del proyecto, es necesario establecer por qué las arquitecturas seleccionadas resuelven el problema y qué parametrización específica se ha aplicado sobre el conjunto de datos de \textit{Valorant}.
+
+\subsection{¿Por qué funcionan en VRCE(Valorant Role Compliance Evaluation)?}
+
+La eficacia de Random Forest y XGBoost en este proyecto radica en su sinergia matemática con la naturaleza de los datos de los \textit{esports}. Estos algoritmos funcionan para nuestro proyecto por dos razones estructurales:
+
+\begin{enumerate}
+    \item \textbf{Gestión de la varianza y el sesgo:} El rendimiento de un jugador en Tier 2 presenta una alta volatilidad. Random Forest, mediante \textit{Bagging}, entrena árboles profundos sobre submuestras aleatorias y promedia sus resultados, lo que reduce drásticamente la varianza y amortigua el impacto de partidas anómalas (ruido). Por su parte, XGBoost utiliza \textit{Boosting} para reducir el sesgo, prestando mayor atención secuencial a los patrones de jugadores que son más difíciles de evaluar.
+    \item \textbf{Asimilación de características heterogéneas:} Ambos algoritmos particionan el espacio de datos mediante umbrales ortogonales. Esto significa que pueden procesar simultáneamente variables continuas (como el Daño Promedio por Ronda o ADR), ratios probabilísticos (como el \textit{Headshot \%}) y variables categóricas codificadas (Rol y Agente) sin requerir que los datos de entrada sigan una distribución normal estricta.
+\end{enumerate}
+
+\subsection{Configuración del \textit{pipeline} y justificación}
+
+La configuración del sistema abarca un \textit{pipeline} completo de transformación de datos justificado analíticamente:
+
+\begin{itemize}
+    \item \textbf{Preprocesamiento y \textit{Encoding}:} Los datos extraídos en bruto (ej. porcentajes en formato texto) se castearon a variables numéricas continuas. Para las variables categóricas fundamentales, como \texttt{Role} y \texttt{Agents}, se aplicó un \texttt{LabelEncoder}. Esta técnica transforma las etiquetas de texto en valores numéricos secuenciales, lo que permite que los árboles de decisión generen divisiones matemáticas basadas en la función específica del jugador.
+
+    \item \textbf{Feature Engineering (Construcción de atributos):} En lugar de delegar todo el descubrimiento de patrones al algoritmo, se generó conocimiento del dominio mediante la extracción de métricas de columnas compuestas y la creación de nuevas variables derivadas. Se calcularon variables sintéticas para concentrar el valor analítico basándose en las fórmulas implementadas en el código:
+
+    \begin{itemize}
+        \item \textbf{Offensive\_Index:} $KPR + FKPR$
+        \item \textbf{Survival\_Index:} $1 - FDPR$
+        \item \textbf{Clutch\_Index:} $Clutch\_Success\_Ratio \times Clutches\_Won$
+    \end{itemize}
+
+    Esta configuración reduce la dimensionalidad redundante y concentra el valor analítico en indicadores directos de rendimiento. La inclusión de estos índices permite capturar de forma más precisa el impacto ofensivo, la gestión del riesgo táctico y el desempeño bajo presión en situaciones críticas, elementos que son determinantes para la evaluación objetiva por rol.
+    
+    \item \textbf{Generación y normalización de la variable objetivo:} Para aplicar la supervisión débil, la variable \textit{target} (\texttt{role\_score\_raw}) se calculó ponderando heurísticamente las estadísticas según el rol, priorizando \texttt{FKPR} para duelistas y \texttt{APR} para controladores. Después, el valor bruto se normalizó con el método Min-Max para acotarlo al rango numérico $[0,1]$. 
+    
+    \item \textbf{Estrategia de entrenamiento y ajuste de hiperparámetros:} Para evitar el \textit{overfitting} (sobreajuste), la experimentación no se ejecutó en una única partición de datos. Se implementó una estrategia de \textbf{Validación Cruzada} (\textit{K-Fold Cross-Validation}). Durante estas iteraciones, se parametrizaron hiperparámetros clave de los árboles: la profundidad máxima (\texttt{max\_depth}) para controlar la complejidad de las reglas capturadas, el número de árboles (\texttt{n\_estimators}) para asegurar la convergencia del ensamblaje, y la tasa de aprendizaje (\texttt{learning\_rate} en XGBoost) para optimizar la corrección de errores residuales sin memorizar el ruido de entrenamiento.
+\end{itemize}
+
+\section{Análisis de resultados y discusión del sistema}
+
+La validación del sistema \textit{Valorant Performance Evaluation} (VPER) se fundamenta en la evaluación de las predicciones generadas por los modelos de ensamblaje frente al conjunto de datos de prueba (20\% de la muestra original), garantizando la reproducibilidad mediante una semilla aleatoria (\texttt{random\_state=42}). 
+
+\subsection{Evaluación de la estimación de cumplimiento}
+
+Al tratarse de la estimación de una variable continua (\texttt{role\_score}) en el intervalo $[0, 1]$, el problema se enmarca estrictamente como una regresión supervisada. Por consiguiente, no procede el uso de métricas de clasificación discreta como la matriz de confusión. El desempeño se evalúa con las métricas RMSE, MAE y $R^2$, y se complementa con gráficos de valores reales vs. predichos y análisis de residuos para diagnosticar la calidad del ajuste.
+
+Los resultados se obtuvieron tras la optimización de hiperparámetros mediante \textit{GridSearchCV} con validación cruzada ($k = 5$), método seleccionado para garantizar una búsqueda exhaustiva en el espacio de parámetros. Se optimizaron las siguientes configuraciones:
+
+\begin{itemize}
+    \item \textbf{Random Forest:} \texttt{n\_estimators} $[50, 100, 200]$ y \texttt{max\_depth} $[5, 10, 15]$.
+    \item \textbf{XGBoost:} \texttt{n\_estimators} $[100, 200]$, \texttt{learning\_rate} $[0.01, 0.1, 0.2]$ y \texttt{max\_depth} $[3, 5, 7]$.
+\end{itemize}
+
+Las mejores configuraciones encontradas en la ejecución fueron:
+
+\begin{itemize}
+    \item \textbf{Random Forest:} \texttt{max\_depth = 15}, \texttt{n\_estimators = 50}.
+    \item \textbf{XGBoost:} \texttt{learning\_rate = 0.1}, \texttt{max\_depth = 7}, \texttt{n\_estimators = 100}.
+\end{itemize}
+
+Tras este proceso de validación cruzada, se obtuvieron los siguientes rendimientos predictivos:
+
+\begin{itemize}
+    \item \textbf{Regresión Lineal (Baseline):} RMSE de $0.0990$, MAE de $0.0828$ y un $R^2$ de $0.6650$.
+    \item \textbf{Random Forest Regressor:} RMSE de $0.0032$, MAE de $0.0018$ y un $R^2$ de $0.9996$.
+    \item \textbf{XGBoost Regressor:} RMSE de $0.0028$, MAE de $0.0012$ y un $R^2$ de $0.9997$.
+\end{itemize}
+
+La comparación frente al baseline confirma que los algoritmos de ensamblaje presentan una mejora sustancial en las tres métricas. Desde una perspectiva de \textit{Machine Learning}, un coeficiente $R^2$ de $0.9997$ en XGBoost indica que el modelo ha logrado mapear con alta fidelidad la función heurística subyacente utilizada para generar las etiquetas mediante supervisión débil. Esto valida la robustez del enfoque de árboles de decisión y su capacidad de generalización tras validación cruzada.
+\subsection{Interpretación del modelo (\textit{Feature Importance})}
+
+El valor diferencial del sistema VPER frente a enfoques tradicionales es su interpretabilidad. Al haber asimilado las reglas de rendimiento con un error casi nulo (RMSE de 0.0028), el análisis de la Importancia de las Variables (\textit{Feature Importance}) extraído de XGBoost permite responder de forma empírica y confiable a las métricas más determinantes por cada posición en el entorno competitivo Tier 2:
+
+\begin{enumerate}
+    \item \textbf{Rol de Duelista:} El algoritmo dictamina que la acción positiva más importante radica en el impacto temprano para la apertura de rondas. Variables agresivas como el \texttt{First Kills Per Round} (FKPR) dominan las particiones de los árboles. Simultáneamente, confirma que la acción negativa que más penaliza al jugador es el \texttt{First Deaths Per Round} (FDPR), demostrando matemáticamente que el riesgo descontrolado destruye el valor táctico del jugador.
+    \item \textbf{Roles de Controlador e Iniciador:} El modelo relega métricas populares como el daño absoluto, otorgando el mayor peso predictivo a las variables de soporte continuo, en particular las asistencias por ronda (\texttt{APR}).
+    \item \textbf{Rol de Centinela:} El sistema demuestra de forma objetiva que el éxito defensivo se cimenta en la resiliencia y la gestión de la economía del equipo. El índice de éxito en situaciones críticas (\texttt{Clutch\_Success\_Ratio}) y la minimización de muertes tempranas emergen como los factores decisivos para maximizar el \texttt{role\_score}.
+\end{enumerate}
+
+\subsection{Escalabilidad y despliegue del sistema operativo}
+
+La eficiencia lograda por XGBoost con una configuración de 100 estimadores y una profundidad máxima de 7 garantiza la viabilidad operativa del sistema. El tiempo para procesar y evaluar a un jugador es mínimo (menos que 1 segundo), permitiendo que VPER ingeste miles de partidas semanalmente sin requerir infraestructuras costosas. Esto consolida al proyecto como una herramienta analítica real, escalable y adoptable por el \textit{staff} técnico para la toma de decisiones informadas sobre rotaciones, entrenamientos y fichajes.
+
 % =================================================================
 % BIBLIOGRAFÍA (Añadir fuentes bibliográficas)
 % =================================================================
@@ -345,49 +469,49 @@ El flujo de procesamiento del sistema se define de la siguiente manera:
 \begin{thebibliography}{99}
 
     \bibitem{riot_api}
-    Riot Games. (2024).
+    Riot Games. (2024). 
     \textit{Riot Games Developer Portal}. Recuperado de https://developer.riotgames.com/
-
+    
     \bibitem{henrik_api}
-    HenrikDev. (2024).
+    HenrikDev. (2024). 
     \textit{Valorant API Documentation}. Recuperado de https://docs.henrikdev.xyz/
-
+    
     \bibitem{tracker}
-    Tracker Network. (2024).
+    Tracker Network. (2024). 
     \textit{Valorant Tracker}. Recuperado de https://tracker.gg/valorant
-
+    
     \bibitem{vlr}
-    VLR.gg. (2024).
+    VLR.gg. (2024). 
     \textit{Valorant Esports Statistics}. Recuperado de https://www.vlr.gg/
-
+    
     \bibitem{james}
-    James, G., Witten, D., Hastie, T., \& Tibshirani, R. (2021).
+    James, G., Witten, D., Hastie, T., \& Tibshirani, R. (2021). 
     \textit{An Introduction to Statistical Learning} (2nd ed.). Springer.
-
+    
     \bibitem{geron}
-    Géron, A. (2022).
+    Géron, A. (2022). 
     \textit{Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow} (3rd ed.). O'Reilly Media.
-
+    
     \bibitem{bishop}
-    Bishop, C. M. (2006).
+    Bishop, C. M. (2006). 
     \textit{Pattern Recognition and Machine Learning}. Springer.
-
+    
     \bibitem{breiman}
-    Breiman, L. (2001). Random forests.
+    Breiman, L. (2001). Random forests. 
     \textit{Machine Learning}, 45(1), 5–32.
-
+    
     \bibitem{xgboost}
-    Chen, T., \& Guestrin, C. (2016). XGBoost: A scalable tree boosting system.
+    Chen, T., \& Guestrin, C. (2016). XGBoost: A scalable tree boosting system. 
     \textit{Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining}.
-
+    
     \bibitem{feature_engineering}
-    Kuhn, M., \& Johnson, K. (2019).
+    Kuhn, M., \& Johnson, K. (2019). 
     \textit{Feature Engineering and Selection}. Chapman and Hall/CRC.
-
+    
     \bibitem{sports_analytics}
-    Gudmundsson, J., \& Horton, M. (2017). Spatio-temporal analysis of team sports.
+    Gudmundsson, J., \& Horton, M. (2017). Spatio-temporal analysis of team sports. 
     \textit{ACM Computing Surveys}, 50(2).
-
+    
     \bibitem{esports}
     Block, F., et al. (2018). Esports analytics: A framework for player performance evaluation. IEEE Conference.
 
