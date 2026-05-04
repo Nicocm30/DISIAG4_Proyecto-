@@ -106,3 +106,50 @@ El valor exacto puede variar según el entrenamiento.
 - El endpoint acepta `Kills:Deaths` o `KDR`.
 - El endpoint acepta `Clutches (won/played)` y calcula `Clutches_Won` y `Clutch_Success_Ratio`.
 - Las columnas porcentuales pueden enviarse como `27.5%`, `27.5` o `0.275`.
+
+## Documentación Swagger
+
+La API de inferencia incluye documentación interactiva con Swagger UI.
+
+Levantar el servicio de inferencia:
+
+```bash
+docker compose up --build inference
+```
+
+Abrir la documentación en el navegador:
+
+```text
+http://localhost:3000/api-docs
+```
+
+También se puede consultar la especificación OpenAPI en formato JSON:
+
+```text
+http://localhost:3000/swagger.json
+```
+
+Endpoints principales:
+
+- `GET /health`: verifica el estado de la API.
+- `POST /predict`: recibe las métricas del jugador y devuelve la probabilidad de cumplimiento del rol.
+
+Ejemplo de cuerpo para `POST /predict`:
+
+```json
+{
+  "Average Combat Score": 245.7,
+  "Average Damage Per Round": 158.4,
+  "Kills Per Round": 0.82,
+  "Assists Per Round": 0.31,
+  "First Kills Per Round": 0.14,
+  "First Deaths Per Round": 0.09,
+  "Headshot %": 27.5,
+  "Clutch Success %": 18.2,
+  "Clutch_Success_Ratio": 0.25,
+  "Clutches_Won": 2,
+  "KDR": 1.18,
+  "Agents": "Jett",
+  "Role": "Duelist"
+}
+```

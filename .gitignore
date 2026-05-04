@@ -1,0 +1,15 @@
+# Models
+Framework/models/
+*.pkl
+*.joblib
+
+# Data
+Framework/training/data/
+*.csv
+
+# Python
+__pycache__/
+*.pyc
+
+# Node
+node_modules/

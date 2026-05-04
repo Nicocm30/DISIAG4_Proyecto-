@@ -1,8 +1,17 @@
 const express = require("express");
+const swaggerUi = require("swagger-ui-express");
 const { spawn } = require("child_process");
+const swaggerSpec = require("./swagger");
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.get("/swagger.json", (_req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpec);
+});
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "VRCE Inference API" });
@@ -47,4 +56,5 @@ app.post("/predict", (req, res) => {
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`VRCE Inference API running on port ${port}`);
+  console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
 });
