@@ -1,0 +1,12 @@
+{
+  "name": "vrce-inference-api",
+  "version": "1.0.0",
+  "description": "NodeJS API for VRCE role compliance inference",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.3"
+  }
+}
