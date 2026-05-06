@@ -1,23 +1,25 @@
-%%%% Librerias %%%%
+%%%% Template Adaptado para UCLM %%%%
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{ULBreport}
-\LoadClass[a4paper,11pt]{report} 
+\LoadClass[a4paper,11pt]{report} % La clase 'report' permite usar Capítulos
 
 %%%%Structure%%%%
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[T1]{fontenc}
 \RequirePackage{csquotes}
-\RequirePackage[spanish,es-tabla]{babel} 
+\RequirePackage[spanish,es-tabla]{babel} % <--- CAMBIADO A ESPAÑOL
+
+% Comentado para permitir tu bibliografía manual (\begin{thebibliography})
+% \RequirePackage[backend=biber,citestyle=alphabetic,bibstyle=authoryear]{biblatex}
 
 \RequirePackage{tabularx}
-\RequirePackage{booktabs} %
 \RequirePackage[top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry} % Márgenes UCLM
 \RequirePackage{hyperref}
 \RequirePackage{enumitem}
 \RequirePackage{xkeyval}
 \RequirePackage{ifthen}
 
-% Paquetes
+% Paquetes añadidos para tu diseño UCLM
 \RequirePackage{eso-pic}     
 \RequirePackage{transparent} 
 \RequirePackage{float}       
@@ -30,7 +32,7 @@
 \pgfplotsset{compat=newest}
 
 %%%%Forme%%%%
-\RequirePackage[Bjornstrup]{fncychap} 
+\RequirePackage[Bjornstrup]{fncychap} % <--- ESTO CREA LOS CUADROS GRISES AUTOMÁTICOS
 \RequirePackage{graphicx}
 \RequirePackage{textcomp}
 \RequirePackage{eurosym}
@@ -99,7 +101,7 @@
 \vfill
 }}}
 
-% Comando estructurado para imprimir portada UCLM
+% Comando estructurado para imprimir tu portada UCLM
 \newcommand*{\titleUCLM}[1]{\setkeys[PRE]{fam}{#1}
     \begingroup
     \begin{titlepage}
