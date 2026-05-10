@@ -1,0 +1,124 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "VRCE API",
+    "version": "1.0.0",
+    "description": "API REST para estimar la probabilidad de cumplimiento del rol de un jugador de Valorant."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor local"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Verificar estado de la API",
+        "responses": {
+          "200": {
+            "description": "API disponible"
+          }
+        }
+      }
+    },
+    "/predict": {
+      "post": {
+        "summary": "Estimar probabilidad de cumplimiento del rol",
+        "description": "Recibe métricas de rendimiento de un jugador y devuelve la probabilidad estimada de cumplimiento del rol.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PredictionRequest"
+              },
+              "example": {
+                "Average Combat Score": 220,
+                "Average Damage Per Round": 140,
+                "Kills Per Round": 0.8,
+                "Assists Per Round": 0.3,
+                "First Kills Per Round": 0.15,
+                "First Deaths Per Round": 0.12,
+                "Headshot %": 25,
+                "Clutch Success %": 30,
+                "Clutch_Success_Ratio": 0.3,
+                "Clutches_Won": 5,
+                "KDR": 1.2,
+                "Agents": "Jett",
+                "Role": "Duelist"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Predicción generada correctamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PredictionResponse"
+                },
+                "example": {
+                  "role_probability": 0.8732
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error durante la predicción"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PredictionRequest": {
+        "type": "object",
+        "required": [
+          "Average Combat Score",
+          "Average Damage Per Round",
+          "Kills Per Round",
+          "Assists Per Round",
+          "First Kills Per Round",
+          "First Deaths Per Round",
+          "Headshot %",
+          "Clutch Success %",
+          "Clutch_Success_Ratio",
+          "Clutches_Won",
+          "KDR",
+          "Agents",
+          "Role"
+        ],
+        "properties": {
+          "Average Combat Score": { "type": "number" },
+          "Average Damage Per Round": { "type": "number" },
+          "Kills Per Round": { "type": "number" },
+          "Assists Per Round": { "type": "number" },
+          "First Kills Per Round": { "type": "number" },
+          "First Deaths Per Round": { "type": "number" },
+          "Headshot %": { "type": "number" },
+          "Clutch Success %": { "type": "number" },
+          "Clutch_Success_Ratio": { "type": "number" },
+          "Clutches_Won": { "type": "number" },
+          "KDR": { "type": "number" },
+          "Agents": { "type": "string" },
+          "Role": {
+            "type": "string",
+            "enum": ["Duelist", "Controller", "Sentinel", "Initiator"]
+          }
+        }
+      },
+      "PredictionResponse": {
+        "type": "object",
+        "properties": {
+          "role_probability": {
+            "type": "number",
+            "description": "Probabilidad estimada de cumplimiento del rol en el rango [0,1]."
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,60 +1,57 @@
 const express = require("express");
-const swaggerUi = require("swagger-ui-express");
 const { spawn } = require("child_process");
-const swaggerSpec = require("./swagger");
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./swagger.json");
 
 const app = express();
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json());
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.get("/swagger.json", (_req, res) => {
-  res.setHeader("Content-Type", "application/json");
-  res.send(swaggerSpec);
-});
-
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok", service: "VRCE Inference API" });
+app.get("/health", (req, res) => {
+  res.json({
+    status: "OK",
+    service: "VRCE Inference API"
+  });
 });
 
 app.post("/predict", (req, res) => {
-  const py = spawn("python3", ["predict.py"], { cwd: __dirname });
+  const python = spawn("python3", ["predict.py"]);
 
-  let stdout = "";
-  let stderr = "";
+  python.stdin.write(JSON.stringify(req.body));
+  python.stdin.end();
 
-  py.stdout.on("data", (data) => {
-    stdout += data.toString();
+  let result = "";
+  let error = "";
+
+  python.stdout.on("data", (data) => {
+    result += data.toString();
   });
 
-  py.stderr.on("data", (data) => {
-    stderr += data.toString();
+  python.stderr.on("data", (data) => {
+    error += data.toString();
   });
 
-  py.on("close", (code) => {
+  python.on("close", (code) => {
     if (code !== 0) {
       return res.status(500).json({
         error: "Prediction failed",
-        details: stderr.trim()
+        details: error
       });
     }
 
     try {
-      return res.json(JSON.parse(stdout));
-    } catch (_err) {
-      return res.status(500).json({
+      res.json(JSON.parse(result));
+    } catch (err) {
+      res.status(500).json({
         error: "Invalid prediction output",
-        raw: stdout
+        raw: result
       });
     }
   });
-
-  py.stdin.write(JSON.stringify(req.body));
-  py.stdin.end();
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`VRCE Inference API running on port ${port}`);
-  console.log(`Swagger UI available at http://localhost:${port}/api-docs`);
+app.listen(3000, () => {
+  console.log("VRCE Inference API running on port 3000");
+  console.log("Swagger docs available at http://localhost:3000/api-docs");
 });

@@ -1,10 +1,31 @@
 services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.11.1
+    container_name: vrce-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlruns
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --backend-store-uri file:/mlruns
+      --serve-artifacts
+      --artifacts-destination /mlruns/artifacts
+      --allowed-hosts "*"
+      --cors-allowed-origins "http://localhost:5000,http://127.0.0.1:5000"
+
   training:
     build: ./training
     container_name: vrce-training
     volumes:
       - ./models:/app/models
       - ./training/data:/app/data
+      - ./mlruns:/app/mlruns
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      - mlflow
 
   inference:
     build: ./inference

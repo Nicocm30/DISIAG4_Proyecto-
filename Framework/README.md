@@ -1,155 +1,172 @@
 # VRCE - Despliegue del modelo mediante API
 
-Arquitectura con dos contenedores:
+Arquitectura basada en microservicios con contenedores Docker:
 
-- `training`: entrena el modelo XGBoost a partir del CSV sin procesar.
-- `inference`: expone una API NodeJS/Express y ejecuta la inferencia mediante Python.
+- `training`: entrena múltiples modelos (KNN y XGBoost) utilizando datasets históricos (2023, 2024, 2025) y registra experimentos con MLflow.
+- `inference`: expone una API REST (NodeJS + Express) que realiza inferencia utilizando el modelo seleccionado (por defecto XGBoost).
 
-## Estructura
+---
 
-```text
-vrce_docker/
+## Estructura del proyecto
+
+```
+VRCE/
 ├── training/
-│   ├── data/players_stats.csv
-│   ├── preprocessing.py
+│   ├── data/
+│   │   ├── players_stats_2023.csv
+│   │   ├── players_stats_2024.csv
+│   │   └── players_stats_2025.csv
+│   ├── main.py
 │   ├── train.py
+│   ├── preprocessing.**py**
+│   ├── feature_selection.py
 │   ├── requirements.txt
 │   └── Dockerfile
+│
 ├── inference/
-│   ├── preprocessing.py
 │   ├── predict.py
 │   ├── server.js
+│   ├── swagger.json
 │   ├── package.json
 │   ├── requirements.txt
-│   └── Dockerfile
-├── models/
-└── docker-compose.yml
+│   ├── Dockerfile
+│   └── models/
+│
+├── mlruns/
+├── docker-compose.yml
+└── README.md
 ```
 
-## 1. Entrenar el modelo
+---
 
-```bash
+## 1. Entrenamiento del modelo
+
+Ejecutar:
+
+```
 docker compose run --rm training
 ```
 
-Esto genera los artefactos en `models/`:
+Esto realiza:
 
-```text
-role_model.pkl
-imputer.pkl
-agent_encoder.pkl
-role_encoder.pkl
-score_scaler.pkl
-feature_columns.pkl
-agent_to_role.pkl
-metrics.json
-dataset_players_processed.csv
+- unión de datasets 2023–2025
+- preprocessing y feature engineering
+- selección de variables (SelectKBest)
+- entrenamiento de:
+  - KNN Regressor
+  - XGBoost Regressor
+- evaluación (RMSE, MAE, R²)
+- registro en MLflow
+
+### Artefactos generados
+
+```
+inference/models/
+├── KNN/
+├── XGBoost/
+├── shared/
+└── model_comparison.csv
 ```
 
-## 2. Levantar la API de inferencia
+---
 
-```bash
+## 2. MLflow (Tracking de experimentos)
+
+Levantar MLflow:
+
+```
+docker compose up mlflow
+```
+
+Abrir:
+
+```
+http://localhost:5000
+```
+
+Se registran:
+
+- parámetros del modelo
+- métricas
+- features seleccionadas
+- dataset utilizado
+- artefactos del modelo
+
+---
+
+## 3. Levantar API de inferencia
+
+```
 docker compose up --build inference
 ```
 
-## 3. Probar salud del servicio
+---
 
-```bash
+## 4. Verificar API
+
+```
 curl http://localhost:3000/health
 ```
 
-Respuesta esperada:
+---
 
-```json
-{
-  "status": "ok",
-  "service": "VRCE Inference API"
-}
+## 5. Realizar predicción
+
 ```
-
-## 4. Probar predicción
-
-```bash
 curl -X POST http://localhost:3000/predict \
 -H "Content-Type: application/json" \
 -d '{
-  "Average Combat Score": 245,
-  "Average Damage Per Round": 158.4,
-  "Kills Per Round": 0.82,
-  "Assists Per Round": 0.31,
-  "First Kills Per Round": 0.14,
-  "First Deaths Per Round": 0.09,
-  "Headshot %": "27.5%",
-  "Clutch Success %": "18.2%",
-  "Clutches (won/played)": "2/8",
-  "KDR": 1.18,
-  "Agents": "Jett"
+  "Average Combat Score": 220,
+  "Average Damage Per Round": 140,
+  "Kills Per Round": 0.8,
+  "Assists Per Round": 0.3,
+  "First Kills Per Round": 0.15,
+  "First Deaths Per Round": 0.12,
+  "Headshot %": 25,
+  "Clutch Success %": 30,
+  "Clutch_Success_Ratio": 0.3,
+  "Clutches_Won": 5,
+  "KDR": 1.2,
+  "Agents": "Jett",
+  "Role": "Duelist"
 }'
 ```
 
-Respuesta esperada:
+Respuesta:
 
-```json
+```
 {
-  "system": "VRCE",
-  "agent": "Jett",
+  "model": "XGBoost",
   "role": "Duelist",
-  "role_compliance_probability": 0.8732
+  "agent": "Jett",
+  "role_probability": 0.8732
 }
 ```
 
-El valor exacto puede variar según el entrenamiento.
+---
 
-## Notas técnicas
+## 6. Swagger (Documentación API)
 
-- El rol se infiere desde el agente cuando no se envía `Role`.
-- El endpoint acepta `Kills:Deaths` o `KDR`.
-- El endpoint acepta `Clutches (won/played)` y calcula `Clutches_Won` y `Clutch_Success_Ratio`.
-- Las columnas porcentuales pueden enviarse como `27.5%`, `27.5` o `0.275`.
+Abrir:
 
-## Documentación Swagger
-
-La API de inferencia incluye documentación interactiva con Swagger UI.
-
-Levantar el servicio de inferencia:
-
-```bash
-docker compose up --build inference
 ```
-
-Abrir la documentación en el navegador:
-
-```text
 http://localhost:3000/api-docs
 ```
 
-También se puede consultar la especificación OpenAPI en formato JSON:
+---
 
-```text
-http://localhost:3000/swagger.json
-```
+## Notas técnicas
 
-Endpoints principales:
+- El sistema utiliza aprendizaje supervisado con etiquetas generadas heurísticamente.
+- Se emplea selección de características para reducir dimensionalidad.
+- Se comparan múltiples modelos para validación experimental.
+- MLflow garantiza trazabilidad completa del experimento.
+- El modelo final es XGBoost por su mejor rendimiento en datos tabulares.
 
-- `GET /health`: verifica el estado de la API.
-- `POST /predict`: recibe las métricas del jugador y devuelve la probabilidad de cumplimiento del rol.
+---
 
-Ejemplo de cuerpo para `POST /predict`:
+## Consideraciones
 
-```json
-{
-  "Average Combat Score": 245.7,
-  "Average Damage Per Round": 158.4,
-  "Kills Per Round": 0.82,
-  "Assists Per Round": 0.31,
-  "First Kills Per Round": 0.14,
-  "First Deaths Per Round": 0.09,
-  "Headshot %": 27.5,
-  "Clutch Success %": 18.2,
-  "Clutch_Success_Ratio": 0.25,
-  "Clutches_Won": 2,
-  "KDR": 1.18,
-  "Agents": "Jett",
-  "Role": "Duelist"
-}
-```
+- La inclusión de múltiples años mejora la generalización.
+- Puede introducir sesgo temporal por cambios en el meta del juego.
+- Se incluye la variable `Dataset_Year` para capturar variaciones temporales.

@@ -5,7 +5,6 @@ Framework/models/
 
 # Data
 Framework/training/data/
-*.csv
 
 # Python
 __pycache__/
