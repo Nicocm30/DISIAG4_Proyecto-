@@ -1047,8 +1047,13 @@ Este diseño permite reutilizar la lógica de preprocesamiento de predicción es
 
 La API está documentada mediante especificación OpenAPI 3.0.0 en el archivo \texttt{swagger.json}, que define formalmente la interfaz de la API para consumidores e integración automática.
 
-% [IMAGEN: Pantalla de Swagger UI mostrando endpoints /health y /predict]
-% Insertar: screenshot del Swagger UI en http://localhost:3000/api-docs
+% FIGURA Swagger UI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{deployment/Swagger_UI.png}
+    \caption{Interfaz de Swagger}
+    \label{fig:error_vs_prediction}
+\end{figure}
 
 \textbf{Componentes de la especificación:}
 
@@ -1061,6 +1066,101 @@ La API está documentada mediante especificación OpenAPI 3.0.0 en el archivo \t
 \end{itemize}
 
 El middleware \texttt{swagger-ui-express} sirve una interfaz web interactiva en \texttt{/api-docs}, permitiendo exploración visual, prueba interactiva de endpoints y descarga de la especificación en formato OpenAPI.
+
+\section{Gestión de experimentos y trazabilidad mediante MLflow}
+
+En el desarrollo del sistema \textit{VRCE -- Valorant Role Compliance Evaluation}, se incorpora la herramienta \textit{MLflow} como mecanismo de gestión de experimentos, con el objetivo de garantizar la trazabilidad, reproducibilidad y comparabilidad de los resultados obtenidos durante el proceso de entrenamiento de modelos.
+
+MLflow permite registrar de forma estructurada los distintos componentes asociados a cada experimento, incluyendo parámetros, métricas, artefactos y versiones de modelos, lo que resulta fundamental en el contexto de sistemas de aprendizaje automático aplicados a problemas reales.
+
+\subsection{Configuración del entorno de experimentación}
+
+El sistema utiliza un servidor MLflow desplegado mediante contenedores Docker, lo que permite centralizar el registro de experimentos y facilitar el acceso a la información generada durante el entrenamiento de modelos.
+
+El servidor se configura con almacenamiento persistente, permitiendo conservar los resultados incluso tras la finalización de los contenedores. Además, se habilita la visualización mediante una interfaz web accesible desde el navegador, lo que facilita el análisis comparativo de experimentos.
+
+% FIGURA MLFLOW UI
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{deployment/mlflow_ui.png}
+    \caption{Interfaz de MLflow mostrando los experimentos registrados del sistema VRCE.}
+    \label{fig:mlflow_ui}
+\end{figure}
+
+\subsection{Registro de parámetros y métricas}
+
+Durante el entrenamiento de los modelos, MLflow se utiliza para registrar los parámetros relevantes del experimento, incluyendo:
+
+\begin{itemize}
+    \item Tipo de modelo utilizado (KNN, XGBoost).
+    \item Hiperparámetros optimizados mediante \textit{GridSearchCV}.
+    \item Número de características seleccionadas.
+    \item Configuración del dataset (años utilizados, tamaño del conjunto de entrenamiento y prueba).
+\end{itemize}
+
+Asimismo, se registran las métricas de evaluación principales:
+
+\begin{itemize}
+    \item Root Mean Squared Error (RMSE)
+    \item Mean Absolute Error (MAE)
+    \item Coeficiente de determinación ($R^2$)
+\end{itemize}
+
+Estas métricas permiten comparar el rendimiento de distintos modelos y configuraciones de forma objetiva.
+
+% FIGURA MÉTRICAS
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{deployment/mlflow_metrics.png}
+    \caption{Registro de métricas de evaluación en MLflow para distintos modelos.}
+    \label{fig:mlflow_metrics}
+\end{figure}
+
+\subsection{Gestión de artefactos}
+
+MLflow también permite almacenar los artefactos generados durante el entrenamiento, lo cual resulta clave para la reproducibilidad del sistema. Entre los artefactos registrados se incluyen:
+
+\begin{itemize}
+    \item Modelos entrenados serializados (\textit{model.pkl}).
+    \item Encoders de variables categóricas.
+    \item Escaladores de normalización.
+    \item Conjunto de variables seleccionadas.
+    \item Dataset utilizado para el entrenamiento.
+    \item Resultados de evaluación y predicciones.
+\end{itemize}
+
+Estos artefactos se organizan por modelo (KNN y XGBoost), permitiendo acceder a cada versión del sistema de manera independiente.
+
+% FIGURA ARTEFACTOS
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{deployment/mlflow_artifacts.png}
+    \caption{Visualización de artefactos almacenados en MLflow.}
+    \label{fig:mlflow_artifacts}
+\end{figure}
+
+\subsection{Importancia en el contexto del proyecto}
+
+La integración de MLflow aporta valor significativo al sistema VRCE, ya que permite:
+
+% FIGURA MODELOS
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{deployment/models.png}
+    \caption{Visualización de modelos en MLflow.}
+    \label{fig:mlflow_artifacts}
+\end{figure}
+
+\begin{itemize}
+    \item Comparar múltiples modelos de forma estructurada.
+    \item Garantizar la reproducibilidad de los experimentos.
+    \item Mantener trazabilidad completa de los datos y configuraciones utilizadas.
+    \item Facilitar la selección del modelo final basado en evidencia empírica.
+\end{itemize}
+
+En particular, el uso de MLflow resulta crítico en un entorno donde se combinan múltiples datasets (años 2023, 2024 y 2025), ya que permite analizar el impacto de la incorporación de datos históricos sobre el rendimiento del modelo.
+
+En consecuencia, MLflow se consolida como un componente fundamental dentro del flujo de trabajo del sistema, alineándose con buenas prácticas de MLOps y desarrollo de sistemas de inteligencia artificial robustos.
 
 \section{Orquestación con Docker Compose}
 
