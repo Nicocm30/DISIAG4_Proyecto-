@@ -31,5 +31,4 @@ Además, está diseñado como una herramienta de apoyo a la toma de decisiones p
 ### Integrantes
 
 - Nicolás Celis Moreno
-- Erick Mesias Rosero Lesano
 - Johann Ismael Ordoñez Echeverría

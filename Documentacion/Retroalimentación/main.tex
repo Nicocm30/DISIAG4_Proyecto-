@@ -3,11 +3,16 @@
 % Configuración de enlaces (esto sí se queda en el main o se puede mover al .cls)
 \hypersetup{
     colorlinks=true,
+    hypertexnames=false,
     linkcolor=black,
     filecolor=magenta,      
     urlcolor=blue,
     citecolor=black,
 }
+\Urlmuskip=0mu plus 3mu\relax
+\emergencystretch=10em
+\hfuzz=100pt
+\hbadness=10000
 
 \begin{document}
 
@@ -280,7 +285,7 @@ Dado que el dataset original no contiene una variable explícita de rol, se real
     \centering
     \includegraphics[width=0.8\textwidth]{data_charts/output1.png}
     \caption{Jugadores por rol}
-    \label{fig:objetivos}
+    \label{fig:roles-distribucion}
 \end{figure}
 
 Posteriormente, se analiza la distribución de registros por rol y la frecuencia de aparición de agentes. Este análisis es importante porque permite detectar posibles desequilibrios en la representación de los roles. Una distribución desbalanceada puede afectar el aprendizaje del modelo, ya que los roles con mayor cantidad de registros pueden tener mayor influencia durante el entrenamiento.
@@ -290,7 +295,7 @@ Posteriormente, se analiza la distribución de registros por rol y la frecuencia
     \centering
     \includegraphics[width=0.8\textwidth]{data_charts/output2.png}
     \caption{Top agentes mas frecuentes}
-    \label{fig:objetivos}
+    \label{fig:agentes-frecuentes}
 \end{figure}
 
 \subsection{Distribución de variables clave}
@@ -304,7 +309,7 @@ La presencia de distribuciones asimétricas y comportamientos no lineales refuer
     \centering
     \includegraphics[width=0.8\textwidth]{data_charts/output3.png}
     \caption{Promedio de combate}
-    \label{fig:objetivos}
+    \label{fig:promedio-combate}
 \end{figure}
 
 % FIGURA 2.4
@@ -312,7 +317,7 @@ La presencia de distribuciones asimétricas y comportamientos no lineales refuer
     \centering
     \includegraphics[width=0.8\textwidth]{data_charts/output4.png}
     \caption{Promedio de daño por ronda}
-    \label{fig:objetivos}
+    \label{fig:promedio-dano-ronda}
 \end{figure}
 
 % FIGURA 2.5
@@ -320,7 +325,7 @@ La presencia de distribuciones asimétricas y comportamientos no lineales refuer
     \centering
     \includegraphics[width=0.8\textwidth]{data_charts/output5.png}
     \caption{Muerte por ronda}
-    \label{fig:objetivos}
+    \label{fig:muerte-ronda}
 \end{figure}
 
 % FIGURA 2.6
@@ -328,7 +333,7 @@ La presencia de distribuciones asimétricas y comportamientos no lineales refuer
     \centering
     \includegraphics[width=0.8\textwidth]{data_charts/output6.png}
     \caption{KDR}
-    \label{fig:objetivos}
+    \label{fig:kdr}
 \end{figure}
 
 \subsection{Análisis de outliers}
@@ -348,7 +353,7 @@ La matriz de correlación también permite detectar posibles redundancias entre 
     \centering
     \includegraphics[width=0.8\textwidth]{data_charts/output7.png}
     \caption{Matriz de correlación}
-    \label{fig:objetivos}
+    \label{fig:matriz-correlacion}
 \end{figure}
 
 \section{Detección de sesgos en los datos}
@@ -448,7 +453,7 @@ Este análisis no reemplaza el criterio de dominio, pero aporta una validación 
     \centering
     \includegraphics[width=0.8\textwidth]{data_charts/output8.png}
     \caption{Puntuación de variables SelectKBest}
-    \label{fig:objetivos}
+    \label{fig:selectkbest}
 \end{figure}
 
 \section{Análisis PCA}
@@ -464,7 +469,7 @@ Aunque PCA permite estudiar la estructura dimensional del dataset, no se adopta 
     \centering
     \includegraphics[width=0.8\textwidth]{data_charts/output9.png}
     \caption{Proyección PCA por rol}
-    \label{fig:objetivos}
+    \label{fig:pca-rol}
 \end{figure}
 
 \section{Generación de la variable objetivo}
@@ -502,7 +507,7 @@ Una vez calculado el score bruto, este se normaliza al rango $[0,1]$ mediante \t
     \centering
     \includegraphics[width=0.8\textwidth]{data_charts/output10.png}
     \caption{Distribución del score normalizado}
-    \label{fig:objetivos}
+    \label{fig:score-normalizado}
 \end{figure}
 
 \section{Modelo propuesto}
@@ -869,27 +874,410 @@ Estas limitaciones están directamente relacionadas con las restricciones del da
 
 A pesar de ello, el comportamiento general de los errores sugiere que el modelo logra aproximar de forma razonable patrones funcionales asociados al desempeño competitivo de los jugadores.
 
+% -----------------------------------------------------------------
+% HITO 4: IMPLEMENTACIÓN DE LA ARQUITECTURA DE DESPLIEGUE
+% -----------------------------------------------------------------
+\chapter{Implementación de la arquitectura de despliegue}
+
+En este capítulo se documenta la arquitectura de despliegue del sistema VRCE, concentrada en la separación de responsabilidades mediante contenedores Docker independientes, la implementación de una API REST de inferencia, la integración de servicios mediante orquestación y el establecimiento de un flujo reproducible de entrenamiento e inferencia. Esta fase transforma el modelo entrenado en una solución operativa, consumible y escalable.
+
+\section{Arquitectura del sistema}
+
+La arquitectura de VRCE se estructura en torno a un patrón de microservicios, donde se separan explícitamente los procesos de entrenamiento, inferencia y tracking de experimentos. Esta separación atiende a principios de modularidad, permitiendo que cada componente sea independiente, versionable y desplegable de forma aislada.
+
+\subsection{Componentes principales}
+
+El sistema se compone de tres servicios principales:
+
+\begin{itemize}
+    \item \textbf{Servicio de entrenamiento:} ejecuta la pipeline completa de preparación de datos, selección de características y entrenamiento de modelos. Genera artefactos serializados (modelos, encoders, features seleccionados) en una ruta compartida.
+    
+    \item \textbf{Servicio de inferencia:} consume los modelos generados durante el entrenamiento y expone un endpoint HTTP para realizar predicciones. Implementado mediante Node.js y Express.
+    
+    \item \textbf{Servicio de tracking:} MLflow registra parámetros, métricas, artefactos y trazas de ejecución de cada corrida experimental. Proporciona una interfaz web para comparación de experimentos.
+\end{itemize}
+
+La comunicación entre servicios se realiza exclusivamente a través de volúmenes compartidos (para modelos) y de variables de entorno (para URIs de servicios), eliminando acoplamiento por red en tiempo de compilación.
+
+\section{Contenedorización}
+
+\subsection{Contenedor de entrenamiento}
+
+El contenedor de entrenamiento se construye sobre la imagen base \texttt{python:3.11-slim}, proporcionando un entorno minimalista con las dependencias estrictamente necesarias.
+
+\textbf{Dependencias principales:}
+\begin{itemize}
+    \item \texttt{pandas 2.2.3}: procesamiento y manipulación de datasets.
+    \item \texttt{scikit-learn 1.5.2}: preprocesamiento, selección de características y modelo KNN.
+    \item \texttt{xgboost 2.1.2}: modelo de ensamblaje para regresión.
+    \item \texttt{joblib 1.4.2}: serialización de modelos y encoders.
+    \item \texttt{mlflow 3.11.1}: tracking centralizado de experimentos.
+    \item \texttt{numpy 2.1.3}: operaciones numéricas subyacentes.
+    \item \texttt{matplotlib}, \texttt{seaborn}: visualización de análisis exploratorio.
+\end{itemize}
+
+El flujo de ejecución en el contenedor de entrenamiento sigue la siguiente secuencia:
+
+\begin{enumerate}
+    \item Lectura de datasets históricos (2023, 2024, 2025) desde volúmenes montados.
+    \item Aplicación de transformaciones mediante \texttt{preprocessing.py}: limpieza de tipos, extracción de características derivadas, mapeo agente-rol, cálculo de KDR y normalización de la variable objetivo (\texttt{role\_score}).
+    \item Selección automática de características mediante \textit{SelectKBest} con \textit{f\_regression} como función de puntuación, limitándose a $k=10$ variables más influyentes.
+    \item División 80/20 del dataset en entrenamiento y prueba con semilla fija.
+    \item Entrenamiento de modelos: KNN Regressor y XGBoost Regressor.
+    \item Evaluación con RMSE, MAE y $R^2$ sobre el conjunto de prueba.
+    \item Registro de parámetros, métricas, features seleccionadas y artefactos en MLflow.
+    \item Serialización de modelos, encoders (\textit{LabelEncoder} para Agents y Roles) y lista de features seleccionadas mediante \texttt{joblib}.
+\end{enumerate}
+
+El preprocesamiento implementado en \texttt{training/preprocessing.py} normaliza porcentajes, extrae variables de clutches (ganados, jugados y ratio), calcula KDR, mapea agentes a roles y genera el \textit{role\_score} crudo según reglas por rol. Posteriormente, \texttt{training/main.py} normaliza el \textit{role\_score} con \texttt{MinMaxScaler}, codifica \textit{Agents} y \textit{Role} con \texttt{LabelEncoder} y selecciona variables con \texttt{SelectKBest}. El entrenamiento usa \texttt{GridSearchCV} para KNN y XGBoost, con métrica de validación \texttt{r2}, tal como está definido en \texttt{training/train.py}.
+
+Los artefactos generados se escriben en el directorio \texttt{/app/models/}, que es un volumen compartido con el contenedor de inferencia, garantizando que el modelo más reciente esté siempre disponible para predicciones.
+
+En cada ejecución se generan artefactos versionados por modelo: \texttt{metrics.json}, \texttt{best\_params.json}, \texttt{selected\_features.json}, \texttt{predictions.csv} y el modelo serializado \texttt{model.pkl}. Todos estos archivos se registran en MLflow junto con las métricas y parámetros de la corrida.
+
+\subsection{Contenedor de inferencia}
+
+El contenedor de inferencia se construye sobre \texttt{node:20-slim} con soporte adicional para Python, dado que la predicción se realiza mediante un script de Python invocado desde Node.js.
+
+\textbf{Configuración híbrida:}
+\begin{itemize}
+    \item \textbf{Node.js}: servidor HTTP que expone endpoints REST y sirve la documentación Swagger.
+    \item \textbf{Python (entorno virtual):} ejecución de lógica de predicción con las dependencias necesarias (\textit{scikit-learn}, \textit{xgboost}, \textit{joblib}, \textit{pandas}).
+\end{itemize}
+
+El contenedor de inferencia instala Node.js en el paso principal y, durante la fase de construcción, configura un entorno virtual Python aislado. Esta arquitectura permite mantener la legibilidad del servidor Node.js mientras se reutiliza la lógica de predicción implementada en Python.
+
+\textbf{Dependencias Node.js:}
+\begin{itemize}
+    \item \texttt{express 4.18.3}: marco web para endpoints HTTP.
+    \item \texttt{swagger-ui-express 5.0.0}: visualización interactiva de documentación API.
+    \item \texttt{swagger-jsdoc 6.2.8}: integración de especificación OpenAPI con código.
+\end{itemize}
+
+El punto de entrada es \texttt{server.js}, que inicia un servidor HTTP en el puerto \texttt{3000}.
+
+\section{API de inferencia}
+
+\subsection{Especificación de endpoints}
+
+La API define dos endpoints principales:
+
+\subsubsection{GET /health}
+
+Endpoint de diagnóstico que verifica la disponibilidad del servicio.
+
+\textbf{Respuesta (200 OK):}
+\begin{verbatim}
+{
+  "status": "OK",
+  "service": "VRCE Inference API"
+}
+\end{verbatim}
+
+Este endpoint es utilizado por orquestadores de contenedores (como Kubernetes o Docker Compose) para determinar si el servicio está listo para recibir tráfico.
+
+\subsubsection{POST /predict}
+
+Endpoint de predicción que recibe métricas de rendimiento de un jugador y devuelve la probabilidad estimada de cumplimiento del rol.
+
+\textbf{Estructura de solicitud:}
+
+La solicitud contiene un objeto JSON con las características requeridas:
+
+\begin{verbatim}
+{
+  "Average Combat Score": 220,
+  "Average Damage Per Round": 140,
+  "Kills Per Round": 0.8,
+  "Assists Per Round": 0.3,
+  "First Kills Per Round": 0.15,
+  "First Deaths Per Round": 0.12,
+  "Headshot %": 25,
+  "Clutch Success %": 30,
+  "Clutch_Success_Ratio": 0.3,
+  "Clutches_Won": 5,
+  "KDR": 1.2,
+  "Agents": "Jett",
+  "Role": "Duelist"
+}
+\end{verbatim}
+
+\textbf{Estructura de respuesta:}
+
+En caso de éxito (200 OK):
+
+\begin{verbatim}
+{
+  "role_probability": 0.8732
+}
+\end{verbatim}
+
+La probabilidad devuelta es un valor continuo en $[0, 1]$ normalizado por el modelo XGBoost, donde valores cercanos a 1 indican mayor probabilidad de cumplimiento del rol.
+
+En caso de error (500 Internal Server Error):
+
+\begin{verbatim}
+{
+  "error": "Prediction failed",
+  "details": "error message from Python process"
+}
+\end{verbatim}
+
+\subsection{Flujo de procesamiento de predicción}
+
+El endpoint \texttt{/predict} implementa un procesamiento interactivo entre Node.js y Python:
+
+\begin{enumerate}
+    \item El servidor Node.js recibe la solicitud HTTP POST con el JSON de características.
+    \item Se invoca el script \texttt{predict.py} como proceso secundario (\texttt{spawn}).
+    \item Node.js escribe el JSON en stdin del proceso Python.
+    \item \texttt{predict.py} deserializa el JSON, valida la presencia de campos requeridos y características seleccionadas.
+    \item Carga los artefactos serializados: modelo XGBoost, encoders para Agents y Roles, y lista de features seleccionadas.
+    \item Aplica transformaciones de entrada: encoding categórico, selección de features, normalización si es necesario.
+    \item Ejecuta la predicción sobre el modelo cargado.
+    \item Devuelve el resultado como JSON a través de stdout.
+    \item Node.js captura stdout y lo devuelve al cliente, o captura stderr en caso de excepción.
+\end{enumerate}
+
+El script \texttt{predict.py} valida la presencia de \textit{Agents}, \textit{Role} y de todas las features seleccionadas. Luego transforma \textit{Agents} y \textit{Role} con los encoders del entrenamiento, construye el vector de entrada en el orden de \texttt{selected\_features} y ejecuta la predicción. El valor final se recorta al intervalo $[0,1]$ y se devuelve como \textit{role\_probability}.
+
+Este diseño permite reutilizar la lógica de preprocesamiento de predicción escrita en Python sin necesidad de traducirla a JavaScript, aprovechando las fortalezas de cada lenguaje.
+
+\section{Documentación con Swagger/OpenAPI}
+
+La API está documentada mediante especificación OpenAPI 3.0.0 en el archivo \texttt{swagger.json}, que define formalmente la interfaz de la API para consumidores e integración automática.
+
+% [IMAGEN: Pantalla de Swagger UI mostrando endpoints /health y /predict]
+% Insertar: screenshot del Swagger UI en http://localhost:3000/api-docs
+
+\textbf{Componentes de la especificación:}
+
+\begin{itemize}
+    \item \textbf{Información general:} Título ``VRCE API'', versión ``1.0.0'', descripción de propósito.
+    \item \textbf{Servidores:} URL base \texttt{http://localhost:3000} con descripción de entorno.
+    \item \textbf{Paths:} Definición formal de \texttt{/health} y \texttt{/predict}.
+    \item \textbf{Esquemas:} Definición de estructuras de entrada (\texttt{PredictionRequest}) y salida (\texttt{PredictionResponse}).
+    \item \textbf{Códigos de respuesta:} 200 (éxito), 500 (error de predicción).
+\end{itemize}
+
+El middleware \texttt{swagger-ui-express} sirve una interfaz web interactiva en \texttt{/api-docs}, permitiendo exploración visual, prueba interactiva de endpoints y descarga de la especificación en formato OpenAPI.
+
+\section{Orquestación con Docker Compose}
+
+La definición de múltiples servicios interdependientes se gestiona mediante \texttt{docker-compose.yml}, que especifica configuración, volúmenes, puertos, variables de entorno y relaciones de dependencia.
+
+\subsection{Servicios definidos}
+
+\subsubsection{MLflow}
+
+\begin{verbatim}
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.11.1
+    container_name: vrce-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlruns
+        command: >
+            mlflow server
+            --host 0.0.0.0
+            --backend-store-uri file:/mlruns
+            --serve-artifacts
+            --artifacts-destination /mlruns/artifacts
+            --allowed-hosts "*"
+            --cors-allowed-origins "http://localhost:5000,http://127.0.0.1:5000"
+\end{verbatim}
+
+Esta configuración habilita el servicio de tracking con almacenamiento local de artefactos y permite servirlos directamente desde MLflow. Además, define reglas de CORS y hosts permitidos para el acceso desde entorno local.
+
+Servicio de tracking centralizado que registra experimentos, métricas, parámetros y artefactos. La interfaz web es accesible en \url{http://localhost:5000}. Los datos se persisten en el volumen \texttt{./mlruns}.
+
+\subsubsection{Entrenamiento}
+
+\begin{verbatim}
+services:
+  training:
+    build: ./training
+    container_name: vrce-training
+    volumes:
+      - ./models:/app/models
+      - ./training/data:/app/data
+      - ./mlruns:/app/mlruns
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      - mlflow
+\end{verbatim}
+
+Contenedor que ejecuta la pipeline de entrenamiento. Accede al dataset a través de \texttt{./training/data}, genera modelos en \texttt{./models} y registra el tracking en MLflow mediante la URI de conexión intra-red.
+
+\subsubsection{Inferencia}
+
+\begin{verbatim}
+services:
+  inference:
+    build: ./inference
+    container_name: vrce-inference
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./models:/app/models
+    depends_on:
+      - training
+\end{verbatim}
+
+Contenedor del servicio HTTP. Monta el directorio de modelos para acceso a los artefactos serializados y expone el puerto \texttt{3000}. Establece dependencia explícita con training para garantizar que los modelos existan antes de iniciar.
+
+\subsection{Flujo de orquestación}
+
+\textbf{Ejecución del entrenamiento:}
+
+\begin{verbatim}
+docker compose run --rm training
+\end{verbatim}
+
+Ejecuta el contenedor de entrenamiento una única vez, elimina el contenedor tras finalización (\texttt{--rm}), y persiste los modelos en el volumen compartido.
+
+\textbf{Ejecución de inferencia:}
+
+\begin{verbatim}
+docker compose up --build inference
+\end{verbatim}
+
+Construye la imagen de inferencia si es necesaria, garantiza que el servicio de entrenamiento haya completado (mediante \texttt{depends\_on}), e inicia el servidor HTTP en modo foreground.
+
+\textbf{Monitoreo de experimentos:}
+
+\begin{verbatim}
+docker compose up mlflow
+\end{verbatim}
+
+Inicia únicamente el servicio de MLflow para inspeccionar experimentos históricos y métricas registradas.
+
+\section{Flujo completo de ejecución}
+
+El ciclo de vida del sistema comprende las siguientes etapas:
+
+\begin{enumerate}
+    \item \textbf{Construcción de imágenes:} Los Dockerfiles de training e inference se construyen, instalando dependencias especificadas en \texttt{requirements.txt}.
+    
+    \item \textbf{Ejecución de entrenamiento:} El contenedor training ejecuta \texttt{main.py}, que orquesta la pipeline interna: lectura de datasets, preprocesamiento, selección de features, entrenamiento de KNN y XGBoost, evaluación y registro en MLflow. Los modelos y artefactos se escriben en el volumen compartido \texttt{./models}.
+    
+    \item \textbf{Inicialización de inferencia:} Una vez disponibles los modelos (garantizado por \texttt{depends\_on}), el contenedor inference inicia el servidor Node.js en puerto 3000. El servicio carga los modelos serializados durante el inicio y permanece en espera de solicitudes.
+    
+    \item \textbf{Consumo de predicciones:} Clientes externos envían solicitudes HTTP POST a \url{http://localhost:3000/predict} con métricas de jugadores. Cada solicitud es procesada invocando \texttt{predict.py}, que ejecuta la predicción mediante el modelo XGBoost y devuelve la probabilidad estimada.
+    
+    \item \textbf{Consulta de experimentos:} Durante o después de la ejecución, analistas acceden a \url{http://localhost:5000} para inspeccionar parámetros, métricas y artefactos registrados en MLflow.
+\end{enumerate}
+
+\section{Tareas realizadas en el Hito 4}
+
+En el Hito 4 se ha materializado la conversión de experimentos aislados a un conjunto de componentes ejecutables y reproducibles. Los pasos ejecutados, reflejados en la carpeta \texttt{Framework}, fueron los siguientes: se separó la pipeline de entrenamiento (scripts de preprocesado, selección de características y entrenamiento) del módulo de inferencia; se implementó registro de ejecuciones y artefactos con MLflow; se serializaron los modelos, encoders y la lista de features seleccionadas mediante \texttt{joblib}; y se definieron artefactos operativos (Dockerfiles y \texttt{docker-compose.yml}) que permiten desplegar training, inference y MLflow de forma coordinada.
+
+La implementación concreta incluye los siguientes elementos (existentes en el repositorio): \texttt{training/main.py}, \texttt{training/train.py}, \texttt{training/preprocessing.py}, \texttt{training/feature\_selection.py} (pipeline de preparación y entrenamiento); \texttt{inference/predict.py}, \texttt{inference/server.js}, \texttt{inference/swagger.json} (API de inferencia y especificación OpenAPI); Dockerfiles para ambos contenedores y el archivo \texttt{docker-compose.yml} que orquesta servicios y volúmenes compartidos. Los artefactos de entrenamiento se escriben en el directorio \texttt{./models} y MLflow persiste datos en \texttt{./mlruns}.
+
+Para ejecutar el flujo ya instrumentado se emplean los siguientes comandos (ejecución local con Docker Compose):
+
+\begin{verbatim}
+docker compose run --rm training
+docker compose up --build inference
+docker compose up mlflow
+\end{verbatim}
+
+El endpoint de inferencia funciona bajo Node.js/Express en el puerto \texttt{3000} y delega la ejecución del cálculo en el script Python \texttt{predict.py} (invocado mediante \texttt{spawn}). La especificación OpenAPI se sirve en \texttt{/api-docs} gracias a \texttt{swagger-ui-express}.
+
+\section{Análisis de necesidades e implicaciones operativas}
+
+Este apartado responde las preguntas clave de infraestructura a partir de la implementación de la arquitectura de despliegue y del documento principal.
+
+\subsection{¿Qué se ha hecho y por qué?}
+
+Se ha transformado la experimentación en una solución funcional siguiendo pasos reproducibles: consolidación del preprocesado y selección de features en scripts dedicados; entrenamiento y evaluación automatizados con registro en MLflow; serialización de artefactos; y empaquetado en contenedores para facilitar despliegue. El enfoque elegido prioriza trazabilidad (MLflow), portabilidad (Docker) y una interfaz de consumo estándar (REST/Swagger).
+
+\subsection{¿Requiere de GPU?}
+
+En el estado actual del repositorio no existe soporte para aceleración por GPU. Los Dockerfiles utilizan imágenes base ligeras (\texttt{python:3.11-slim} para \texttt{training} y \texttt{node:20-slim} para \texttt{inference}) y las dependencias indicadas en \texttt{requirements.txt} no incorporan builds con soporte CUDA ni bibliotecas específicas de GPU. XGBoost está presente en la configuración, pero la versión instalada se utiliza en modo CPU. Por tanto, con la configuración actual el sistema NO requiere GPU.
+
+Si en el futuro se decidiera acelerar el entrenamiento con GPU sería necesario: reconstruir la imagen de \texttt{training} sobre una base compatible con CUDA, instalar una versión de XGBoost compilada con soporte GPU y garantizar la presencia de drivers y runtime (NVIDIA Container Toolkit) en el host.
+
+\subsection{¿Es intensivo en CPU?}
+
+El entrenamiento es la fase más demandante computacionalmente. El código realiza operaciones de lectura/transformación de tablas (pandas), selección estadística de variables y entrenamiento de modelos (KNN y XGBoost). Estas tareas son típicamente CPU‑bound; XGBoost puede aprovechar múltiples hilos mediante el parámetro \texttt{n\_jobs} para reducir tiempo de entrenamiento. Dado que el dataset utilizado en la documentación contiene registros agregados (el documento principal menciona ~17.996 registros), la carga no es de orden masivo, pero el coste depende directamente del número de árboles y complejidad del modelo. En resumen: el entrenamiento puede ser moderadamente intensivo en CPU y se beneficia de más núcleos, mientras que la inferencia, tal como está implementada, es ligera y ejecutable en CPUs de baja potencia.
+
+Un aspecto operativo a considerar: el patrón actual invoca \texttt{predict.py} por cada petición HTTP mediante \texttt{spawn}, lo que añade sobrecarga por creación de procesos. Para producción, es recomendable exponer el predictor como un servicio Python persistente (por ejemplo, FastAPI/Flask) o cargar el modelo en memoria dentro del proceso Node.js mediante una capa nativa, reduciendo latencia y carga por petición concurrente.
+
+\subsection{¿Necesitamos almacenar mucho vídeo para luego hacer la inferencia?}
+
+Según la implementación actual, NO. El Framework trabaja con datos tabulares (CSV con métricas por jugador) y no contiene módulos de ingestión ni procesamiento de video. Por tanto, no existe necesidad de almacenamiento masivo de vídeo para realizar la inferencia con el sistema tal cual está implementado.
+
+Si en fases futuras se incorpora análisis de vídeo (p. ej. extracción de features a partir de grabaciones de partidas), entonces las implicaciones serían sustanciales: requerimiento de almacenamiento a escala, pipelines de extracción (decodificación, muestreo, extracción de cuadros), y probablemente necesidad de GPU para modelos de visión y para acelerar procesamiento en batch.
+
+\section{Reproducibilidad y versionado}
+
+La arquitectura de contenedores garantiza reproducibilidad total mediante:
+
+\begin{itemize}
+    \item \textbf{Versiones fijas de dependencias:} Especificadas explícitamente en \texttt{requirements.txt} para Python e imagen base para Node.js.
+    \item \textbf{Semillas deterministas:} El dataset se divide con \texttt{random\_state} fijo en \textit{train\_test\_split}.
+    \item \textbf{Serialización de modelos:} Los modelos entrenados se persisten mediante \texttt{joblib}, permitiendo exacta reproducción de predicciones.
+    \item \textbf{Tracking de experimentos:} MLflow registra todos los parámetros y dataset utilizado en cada corrida, facilitando auditoría y comparación retrospectiva.
+\end{itemize}
+
+La configuración mediante volúmenes compartidos y variables de entorno permite diferencias de ambiente mínimas entre entorno local y producción, reduciendo el riesgo de divergencias operacionales.
+
+\section{Validación operacional}
+
+\subsection{Pruebas del endpoint de salud}
+
+La disponibilidad del servicio se verifica mediante:
+
+\begin{verbatim}
+curl http://localhost:3000/health
+\end{verbatim}
+
+Respuesta esperada:
+
+\begin{verbatim}
+{"status":"OK","service":"VRCE Inference API"}
+\end{verbatim}
+
+\subsection{Pruebas de predicción}
+
+Se valida la funcionalidad de predicción mediante invocación con datos de prueba:
+
+\begin{verbatim}
+curl -X POST http://localhost:3000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"Average Combat Score": 220, "Average Damage Per Round": 140, 
+       "Kills Per Round": 0.8, "Assists Per Round": 0.3, ...}'
+\end{verbatim}
+
+La respuesta devuelve una probabilidad de cumplimiento del rol. Desviaciones del intervalo $[0, 1]$ indican error en procesamiento o necesidad de revisión del modelo.
+
 % =================================================================
 % BIBLIOGRAFÍA (Añadir fuentes bibliográficas)
 % =================================================================
 \newpage
+\begingroup
+\sloppy
 \begin{thebibliography}{99}
 
     \bibitem{riot_api}
     Riot Games. (2024). 
-    \textit{Riot Games Developer Portal}. Recuperado de https://developer.riotgames.com/
+    \textit{Riot Games Developer Portal}. Recuperado de \url{https://developer.riotgames.com/}
     
     \bibitem{henrik_api}
     HenrikDev. (2024). 
-    \textit{Valorant API Documentation}. Recuperado de https://docs.henrikdev.xyz/
+    \textit{Valorant API Documentation}. Recuperado de \url{https://docs.henrikdev.xyz/}
     
     \bibitem{tracker}
     Tracker Network. (2024). 
-    \textit{Valorant Tracker}. Recuperado de https://tracker.gg/valorant
+    \textit{Valorant Tracker}. Recuperado de \url{https://tracker.gg/valorant}
     
     \bibitem{vlr}
     VLR.gg. (2024). 
-    \textit{Valorant Esports Statistics}. Recuperado de https://www.vlr.gg/
+    \textit{Valorant Esports Statistics}. Recuperado de \url{https://www.vlr.gg/}
     
     \bibitem{james}
     James, G., Witten, D., Hastie, T., \& Tibshirani, R. (2021). 
@@ -904,7 +1292,7 @@ A pesar de ello, el comportamiento general de los errores sugiere que el modelo 
     \textit{Pattern Recognition and Machine Learning}. Springer.
     
     \bibitem{breiman}
-    Breiman, L. (2001). Random forests. 
+    Breiman, L. (2001). Random forests.  
     \textit{Machine Learning}, 45(1), 5–32.
     
     \bibitem{xgboost}
@@ -923,5 +1311,6 @@ A pesar de ello, el comportamiento general de los errores sugiere que el modelo 
     Block, F., et al. (2018). Esports analytics: A framework for player performance evaluation. IEEE Conference.
 
 \end{thebibliography}
+\endgroup
 
 \end{document}
