@@ -20,7 +20,6 @@ A partir de estos datos, el sistema:
 
 - Estima la **probabilidad de cumplimiento del rol**, representando de forma normalizada el grado en que el jugador satisface las responsabilidades asociadas a su función.
 - Genera **reportes analíticos estructurados**, donde se evalúa el cumplimiento del rol en función de variables contextuales y se identifican fortalezas y debilidades.
-- Produce **rankings relativos por rol**, basados en el nivel de cumplimiento, evitando comparaciones incorrectas entre jugadores con funciones distintas dentro del equipo.
 
 El enfoque del sistema combina técnicas de *feature engineering* con modelos de Machine Learning supervisado, permitiendo capturar tanto el conocimiento experto como patrones complejos en los datos.
 

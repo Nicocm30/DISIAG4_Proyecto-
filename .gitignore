@@ -1,5 +1,6 @@
 # Models
 Framework/models/
+Framework/mlruns/
 *.pkl
 *.joblib
 

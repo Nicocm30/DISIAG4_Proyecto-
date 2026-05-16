@@ -22,6 +22,25 @@
         }
       }
     },
+    "/metrics": {
+      "get": {
+        "summary": "Exponer métricas Prometheus",
+        "description": "Devuelve métricas operativas de la API en formato Prometheus, incluyendo número de peticiones y latencia de predicción.",
+        "responses": {
+        "200": {
+            "description": "Métricas Prometheus",
+            "content": {
+            "text/plain": {
+                "schema": {
+                "type": "string",
+                "example": "# HELP vrce_http_requests_total Total HTTP requests\\n# TYPE vrce_http_requests_total counter\\nvrce_http_requests_total{method=\"POST\",route=\"/predict\",status=\"200\"} 1\\n\\n# HELP vrce_prediction_latency_seconds Prediction latency in seconds\\n# TYPE vrce_prediction_latency_seconds histogram"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/predict": {
       "post": {
         "summary": "Estimar probabilidad de cumplimiento del rol",

@@ -22,6 +22,7 @@ services:
       - ./models:/app/models
       - ./training/data:/app/data
       - ./mlruns:/app/mlruns
+      - ./monitoring:/app/monitoring
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
     depends_on:
@@ -36,3 +37,21 @@ services:
       - ./models:/app/models
     depends_on:
       - training
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: vrce-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - inference
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: vrce-grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus

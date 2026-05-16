@@ -1,0 +1,62 @@
+[
+    {
+        "feature": "Average Combat Score",
+        "reference_mean": 195.56390174439304,
+        "current_mean": 195.64928277549205,
+        "reference_std": 47.901457517172396,
+        "current_std": 49.065677801867515,
+        "ks_statistic": 0.01653521941455438,
+        "p_value": 0.04505586949276219,
+        "drift_detected": true
+    },
+    {
+        "feature": "Average Damage Per Round",
+        "reference_mean": 128.1009252265861,
+        "current_mean": 128.31631180079393,
+        "reference_std": 30.464836003800123,
+        "current_std": 30.62925380982606,
+        "ks_statistic": 0.010095819600429268,
+        "p_value": 0.5213281767046996,
+        "drift_detected": false
+    },
+    {
+        "feature": "Kills Per Round",
+        "reference_mean": 0.6833398524313272,
+        "current_mean": 0.6883374083129584,
+        "reference_std": 0.1867251228201234,
+        "current_std": 0.192782618071045,
+        "ks_statistic": 0.014569574444008304,
+        "p_value": 0.10482584137342799,
+        "drift_detected": false
+    },
+    {
+        "feature": "Assists Per Round",
+        "reference_mean": 0.31461018757222864,
+        "current_mean": 0.2796571460324517,
+        "reference_std": 0.15968076808095558,
+        "current_std": 0.14714026487953677,
+        "ks_statistic": 0.10751876173784902,
+        "p_value": 3.8692803291063514e-70,
+        "drift_detected": true
+    },
+    {
+        "feature": "First Kills Per Round",
+        "reference_mean": 0.09578615167216203,
+        "current_mean": 0.09987804145389007,
+        "reference_std": 0.07000445123287005,
+        "current_std": 0.07138308683972057,
+        "ks_statistic": 0.028067934381582504,
+        "p_value": 7.190514530486024e-05,
+        "drift_detected": true
+    },
+    {
+        "feature": "First Deaths Per Round",
+        "reference_mean": 0.09855551359516618,
+        "current_mean": 0.1018124474348192,
+        "reference_std": 0.06602581973361055,
+        "current_std": 0.06872386024744967,
+        "ks_statistic": 0.01773921717310134,
+        "p_value": 0.03361863580576219,
+        "drift_detected": true
+    }
+]
