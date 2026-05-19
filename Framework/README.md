@@ -9,8 +9,10 @@ El sistema integra:
 * documentación Swagger;
 * monitorización operativa;
 * trazabilidad experimental con MLflow;
+* visualización en grafana de métricas obtenida en prometheus
 * detección de drift;
 * feedback loop para reentrenamiento.
+* automatización del ciclo MLOps
 
 ---
 
@@ -31,72 +33,45 @@ El framework está compuesto por múltiples servicios desacoplados mediante cont
 
 ```text
 VRCE/
-├── data/
-│   ├── players_stats_2023.csv
-│   ├── players_stats_2024.csv
-│   └── players_stats_2025.csv
-│
 ├── training/
-│   ├── main.py
-│   ├── train.py
-│   ├── preprocessing.py
-│   ├── feature_selection.py
-│   ├── requirements.txt
-│   └── Dockerfile
-│
+│   ├── data/
 ├── inference/
-│   ├── predict.py
-│   ├── server.js
-│   ├── swagger.json
-│   ├── package.json
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── models/
-│
 ├── monitoring/
-│   ├── prometheus.yml
 │   ├── reports/
-│   ├── drift_report.py
-│   └── feedback_loop.py
-│
+├── logs/
 ├── mlruns/
+├── models/
+├── .dockerignore
 ├── docker-compose.yml
-└── README.md
+├── README.md
+└── retrain_and_deploy.sh
 ```
 
 ---
 
-# 1. Entrenamiento del modelo
-
-Ejecutar:
+# 1. Entrenamiento
 
 ```bash
 docker compose run --rm training
 ```
 
-El pipeline realiza:
+Modelos:
 
-* unión de datasets históricos (2023–2025);
-* preprocessing y limpieza;
-* feature engineering;
-* selección de características con SelectKBest;
-* entrenamiento de:
+- KNN Regressor
+- XGBoost Regressor
 
-  * KNN Regressor
-  * XGBoost Regressor
-* evaluación mediante:
+Métricas:
 
-  * RMSE
-  * MAE
-  * R²
-* registro experimental en MLflow.
+- RMSE
+- MAE
+- R²
 
 ---
 
 # Artefactos generados
 
 ```text
-inference/models/
+models/
 ├── KNN/
 ├── XGBoost/
 ├── shared/
@@ -153,7 +128,7 @@ La API utiliza el modelo XGBoost para generar predicciones.
 
 ---
 
-# 4. Verificación de estado
+## Verificación de estado
 
 ```bash
 curl http://localhost:3000/health
@@ -161,7 +136,7 @@ curl http://localhost:3000/health
 
 ---
 
-# 5. Predicción
+## Predicción
 
 ```bash
 curl -X POST http://localhost:3000/predict \
@@ -190,13 +165,13 @@ Respuesta:
   "model": "XGBoost",
   "role": "Duelist",
   "agent": "Jett",
-  "role_probability": 0.8732
+  "role_probability": 0.4932
 }
 ```
 
 ---
 
-# 6. Swagger - Documentación API
+# 4. Swagger - Documentación API
 
 Abrir:
 
@@ -212,7 +187,7 @@ Endpoints disponibles:
 
 ---
 
-# 7. Monitorización operativa
+# 5. Monitorización operativa
 
 ## Endpoint de métricas
 
@@ -230,67 +205,22 @@ Métricas implementadas:
 
 ---
 
-# 8. Prometheus
+Prometheus:
 
-Levantar:
-
-```bash
-docker compose up prometheus
-```
-
-Abrir:
-
-```text
 http://localhost:9090
-```
 
-Consultas ejemplo:
+Grafana:
 
-```promql
-vrce_http_requests_total
-```
-
-```promql
-vrce_prediction_latency_seconds_count
-```
-
-```promql
-vrce_prediction_latency_seconds_sum
-```
-
----
-
-# 9. Grafana
-
-Levantar:
-
-```bash
-docker compose up grafana
-```
-
-Abrir:
-
-```text
 http://localhost:3001
-```
 
-Credenciales iniciales:
+Métricas:
 
-```text
-usuario: admin
-contraseña: admin
-```
-
-Grafana permite:
-
-* visualización en tiempo real;
-* monitoreo operativo;
-* análisis de latencia;
-* seguimiento de peticiones.
+- vrce_http_requests_total
+- vrce_prediction_latency_seconds
 
 ---
 
-# 10. Detección de Drift
+# 6. Detección de Drift
 
 El framework incorpora análisis de drift para detectar cambios en la distribución de los datos respecto al dataset de referencia.
 
@@ -333,7 +263,7 @@ monitoring/reports/
 
 ---
 
-# 11. Feedback Loop y Reentrenamiento
+# 7. Feedback Loop y Reentrenamiento
 
 El sistema incorpora un mecanismo básico de feedback loop orientado a la mejora continua del modelo.
 
@@ -361,27 +291,71 @@ Si se detecta drift significativo, el sistema recomienda reentrenamiento.
 
 ---
 
-# 12. Capacidades MLOps del framework
+# 8. Alertas
 
-VRCE incorpora capacidades MLOps orientadas a mantener la estabilidad y trazabilidad del sistema:
+Sistema de alertas por correo:
 
-* monitorización operativa;
-* trazabilidad experimental;
-* gestión de artefactos;
-* comparación de modelos;
-* observabilidad;
-* detección de drift;
-* feedback loop;
-* reentrenamiento controlado.
+- alerta operativa (latencia)
+- alerta de modelo (drift)
+
+```bash
+docker compose run --rm training python /app/monitoring/evidently/alerting.py
+```
 
 ---
 
-# Consideraciones técnicas
+# 9. Retraining automático
 
-* El sistema utiliza aprendizaje supervisado con etiquetas generadas heurísticamente.
-* El modelo final seleccionado corresponde a XGBoost debido a su mejor rendimiento sobre datos tabulares.
-* La inclusión de múltiples años mejora la generalización.
-* Puede existir drift temporal debido a cambios en el meta competitivo de Valorant.
-* La variable `Dataset_Year` permite capturar variaciones temporales entre temporadas.
+Script:
+
+```bash
+./retrain_and_deploy.sh
+```
+
+O servicio continuo:
+
+```bash
+docker compose up retrainer
+```
 
 ---
+
+# 10. Shadow Testing (Champion-Challenger)
+
+Implementado en la API:
+
+- Champion: XGBoost (respuesta real)
+- Challenger: KNN (evaluación interna)
+
+Logs:
+
+```text
+logs/shadow_testing.jsonl
+```
+
+Contenido:
+
+- predicción champion
+- predicción challenger
+- diferencia (delta)
+
+---
+
+# Capacidades MLOps
+
+- API productiva
+- monitorización
+- drift detection
+- alertas automáticas
+- retraining automatizado
+- despliegue automático
+- shadow testing
+- trazabilidad completa
+
+---
+
+# Consideraciones
+
+- dataset multi-año (2023–2025)
+- posible drift por cambios de meta
+- modelo final: XGBoost
