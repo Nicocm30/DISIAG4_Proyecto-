@@ -8,6 +8,9 @@ docker compose run --rm training python //app/monitoring/drift_report.py
 echo "2. Evaluando feedback loop..."
 docker compose run --rm training python //app/monitoring/feedback_loop.py
 
+echo "3. Alertas..."
+docker compose run --rm training python /app/monitoring/evidently/alerting.py
+
 DRIFT_FILE="monitoring/reports/drift_results.json"
 
 if grep -q '"drift_detected": true' "$DRIFT_FILE"; then

@@ -18,6 +18,12 @@ while True:
         "python", "//app/monitoring/feedback_loop.py"
     ])
 
+    subprocess.run([
+        "docker", "compose", "run", "--rm",
+        "training",
+        "python", "//app/monitoring/alerting.py"
+    ])
+
     result = subprocess.run(
         ["grep", "-q", '"drift_detected": true', "monitoring/reports/drift_results.json"]
     )
