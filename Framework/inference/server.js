@@ -8,11 +8,15 @@ const app = express();
 app.use(express.json());
 const register = new client.Registry();
 
-// No usamos métricas internas de NodeJS para mantener /metrics simple
-/*
-client.collectDefaultMetrics({
-  register
-});*/
+const cpuUsageGauge = new client.Gauge({
+  name: "vrce_cpu_usage_percent",
+  help: "CPU usage percentage"
+});
+
+const memoryUsageGauge = new client.Gauge({
+  name: "vrce_memory_usage_bytes",
+  help: "RAM memory usage in bytes"
+});
 
 const httpRequestCounter = new client.Counter({
   name: "vrce_http_requests_total",
@@ -26,8 +30,31 @@ const predictionLatencyHistogram = new client.Histogram({
   buckets: [0.1, 0.3, 0.5, 1, 2, 5]
 });
 
+register.registerMetric(cpuUsageGauge);
+register.registerMetric(memoryUsageGauge);
 register.registerMetric(httpRequestCounter);
 register.registerMetric(predictionLatencyHistogram);
+
+let lastCpuUsage = process.cpuUsage();
+let lastHrTime = process.hrtime();
+
+function updateSystemMetrics() {
+  const currentCpuUsage = process.cpuUsage(lastCpuUsage);
+  const currentHrTime = process.hrtime(lastHrTime);
+
+  const elapsedMicros = currentHrTime[0] * 1e6 + currentHrTime[1] / 1e3;
+  const usedMicros = currentCpuUsage.user + currentCpuUsage.system;
+
+  const cpuPercent = (usedMicros / elapsedMicros) * 100;
+
+  cpuUsageGauge.set(cpuPercent);
+
+  const memoryUsage = process.memoryUsage();
+  memoryUsageGauge.set(memoryUsage.rss);
+
+  lastCpuUsage = process.cpuUsage();
+  lastHrTime = process.hrtime();
+}
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
@@ -103,6 +130,8 @@ app.post("/predict", (req, res) => {
 });
 
 app.get("/metrics", async (req, res) => {
+  updateSystemMetrics();
+
   res.set("Content-Type", register.contentType);
   res.end(await register.metrics());
 });
