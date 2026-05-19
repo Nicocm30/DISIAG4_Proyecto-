@@ -3,28 +3,51 @@ import json
 import joblib
 import numpy as np
 from pathlib import Path
+from datetime import datetime
 
 
 # ============================================================
 # CONFIG
 # ============================================================
 
-MODEL_NAME = "XGBoost"
-MODEL_DIR = Path("models") / MODEL_NAME
+CHAMPION_MODEL_NAME = "XGBoost"
+CHALLENGER_MODEL_NAME = "KNN"
+
+MODELS_DIR = Path("models")
+LOG_DIR = Path("logs")
+LOG_DIR.mkdir(exist_ok=True)
+
+SHADOW_LOG_PATH = LOG_DIR / "shadow_testing.jsonl"
 
 
 # ============================================================
-# LOAD ARTIFACTS
+# LOAD MODEL BUNDLE
 # ============================================================
 
-model = joblib.load(MODEL_DIR / "model.pkl")
-agent_encoder = joblib.load(MODEL_DIR / "agent_encoder.pkl")
-role_encoder = joblib.load(MODEL_DIR / "role_encoder.pkl")
+def load_model_bundle(model_name):
+    model_dir = MODELS_DIR / model_name
 
-selected_features_path = MODEL_DIR / "selected_features.json"
+    if not model_dir.exists():
+        raise FileNotFoundError(f"Model directory not found: {model_dir}")
 
-with open(selected_features_path, "r", encoding="utf-8") as f:
-    selected_features = json.load(f)
+    model = joblib.load(model_dir / "model.pkl")
+    agent_encoder = joblib.load(model_dir / "agent_encoder.pkl")
+    role_encoder = joblib.load(model_dir / "role_encoder.pkl")
+
+    with open(model_dir / "selected_features.json", "r", encoding="utf-8") as f:
+        selected_features = json.load(f)
+
+    return {
+        "name": model_name,
+        "model": model,
+        "agent_encoder": agent_encoder,
+        "role_encoder": role_encoder,
+        "selected_features": selected_features
+    }
+
+
+champion = load_model_bundle(CHAMPION_MODEL_NAME)
+challenger = load_model_bundle(CHALLENGER_MODEL_NAME)
 
 
 # ============================================================
@@ -45,7 +68,7 @@ except Exception as e:
 # VALIDATION
 # ============================================================
 
-def validate_input(data):
+def validate_input(data, selected_features):
     required_base_fields = [
         "Agents",
         "Role"
@@ -64,8 +87,12 @@ def validate_input(data):
 # PREPARE DATA
 # ============================================================
 
-def prepare_input(data):
+def prepare_input(data, bundle):
     data = data.copy()
+
+    agent_encoder = bundle["agent_encoder"]
+    role_encoder = bundle["role_encoder"]
+    selected_features = bundle["selected_features"]
 
     try:
         data["Agents"] = agent_encoder.transform([data["Agents"]])[0]
@@ -89,22 +116,71 @@ def prepare_input(data):
 
 
 # ============================================================
-# PREDICT
+# PREDICTION
+# ============================================================
+
+def predict_with_bundle(data, bundle):
+    validate_input(data, bundle["selected_features"])
+    X = prepare_input(data, bundle)
+
+    prediction = float(bundle["model"].predict(X)[0])
+    prediction = max(0.0, min(1.0, prediction))
+
+    return prediction
+
+
+# ============================================================
+# SHADOW LOGGING
+# ============================================================
+
+def log_shadow_result(data, champion_prediction, challenger_prediction):
+    delta = abs(champion_prediction - challenger_prediction)
+
+    log_entry = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "agent": data.get("Agents"),
+        "role": data.get("Role"),
+        "champion_model": CHAMPION_MODEL_NAME,
+        "champion_prediction": round(champion_prediction, 6),
+        "challenger_model": CHALLENGER_MODEL_NAME,
+        "challenger_prediction": round(challenger_prediction, 6),
+        "prediction_delta": round(delta, 6)
+    }
+
+    with open(SHADOW_LOG_PATH, "a", encoding="utf-8") as f:
+        f.write(json.dumps(log_entry) + "\n")
+
+
+# ============================================================
+# MAIN
 # ============================================================
 
 try:
-    validate_input(input_json)
-    X = prepare_input(input_json)
+    champion_prediction = predict_with_bundle(input_json, champion)
 
-    prediction = float(model.predict(X)[0])
-
-    prediction = max(0.0, min(1.0, prediction))
+    try:
+        challenger_prediction = predict_with_bundle(input_json, challenger)
+        log_shadow_result(
+            input_json,
+            champion_prediction,
+            challenger_prediction
+        )
+    except Exception as shadow_error:
+        with open(SHADOW_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(json.dumps({
+                "timestamp": datetime.utcnow().isoformat(),
+                "agent": input_json.get("Agents"),
+                "role": input_json.get("Role"),
+                "champion_model": CHAMPION_MODEL_NAME,
+                "challenger_model": CHALLENGER_MODEL_NAME,
+                "shadow_error": str(shadow_error)
+            }) + "\n")
 
     output = {
-        "model": MODEL_NAME,
+        "model": CHAMPION_MODEL_NAME,
         "role": input_json["Role"],
         "agent": input_json["Agents"],
-        "role_probability": round(prediction, 4)
+        "role_probability": round(champion_prediction, 4)
     }
 
     print(json.dumps(output))

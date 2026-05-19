@@ -79,6 +79,7 @@
                   "$ref": "#/components/schemas/PredictionResponse"
                 },
                 "example": {
+                  "model": "XGBoost",
                   "role_probability": 0.8732
                 }
               }
