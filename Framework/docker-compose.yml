@@ -38,6 +38,16 @@ services:
     depends_on:
       - training
 
+  retrainer:
+    image: python:3.11
+    container_name: vrce-retrainer
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: python monitoring/retrainer.py
+    depends_on:
+      - inference
+
   prometheus:
     image: prom/prometheus:latest
     container_name: vrce-prometheus
